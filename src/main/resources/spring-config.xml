@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- Enable usage of @Autowired. -->
+    <context:annotation-config/>
+
+    <!-- Enable component scanning for defining beans with annotations. -->
+    <context:component-scan base-package="es.udc.fic.tic.nautilus"/>
+
+	 <bean id="dataSource" 
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource" p:url="jdbc:hsqldb:file:~/Documents/nautilus;ifexists=false" 
+        p:driverClassName="org.hsqldb.jdbcDriver" p:username="sa" p:password="" />
+    
+	<!-- Hibernate Session Factory -->
+    <bean id="sessionFactory"
+        class="org.springframework.orm.hibernate4.LocalSessionFactoryBean"
+        p:dataSource-ref="dataSource"
+        p:configLocation="classpath:/hibernate-config.xml"/>
+
+    <!-- Transaction manager for a single Hibernate SessionFactory.  -->
+    <bean id="transactionManager"
+        class="org.springframework.orm.hibernate4.HibernateTransactionManager"
+        p:sessionFactory-ref="sessionFactory" />
+
+	<!-- Enable the configuration of transactional behavior based on
+	     annotations. -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+</beans>

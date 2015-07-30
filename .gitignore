@@ -1,0 +1,17 @@
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# class files #
+*.class
+
+# virtual machine crash logs #
+hs_err_pid*
+
+# Mac OSX files #
+.DS_Store
+.AppleDouble
+.LSOverride
+
+/target/
