@@ -8,4 +8,7 @@ public class ModelConstanst {
 	
 	/* Enumerate for encrypt algorithms */
 	public static enum ENCRYPT_ALG {AES, RSA}
+	
+	/* Enumerate for language system */
+	public static enum LANGUAGE {ES, EN}
 }
