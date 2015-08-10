@@ -20,6 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 
@@ -34,7 +35,7 @@ public class ServerServiceTest {
 	@Test
 	public void keepFileAllFieldsTest() throws NotSaveException, ParseException {
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 3, 
-				"17/12/2017 - 00:00:00", 
+				null, "17/12/2017 - 00:00:00", 
 				123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
@@ -53,7 +54,7 @@ public class ServerServiceTest {
 	@Test
 	public void keepFileWithDownloadLimitNegativeTest() throws NotSaveException, ParseException {
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", -3, 
-				"17/12/2017 - 00:00:00", 
+				null, "17/12/2017 - 00:00:00", 
 				123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		assertEquals(file.getDownloadLimit(), -1);
@@ -62,17 +63,17 @@ public class ServerServiceTest {
 	@Test
 	public void keepFileWithoutDateLimitTest() throws NotSaveException, ParseException {
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 3, 
-				null, 123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
+				null, null, 123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		assertNull(file.getDateLimit());
 	}
 	
 	@Test
 	public void getFileByHashWithoutDateLimitAndDownloadLimitTest() 
-			throws NotSaveException, ParseException, InstanceNotFoundException {
+			throws NotSaveException, ParseException, InstanceNotFoundException, FileUnavaliableException {
 		
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", -1, 
-				null, 123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
+				null, null, 123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		FileInfo fileRecovered = serverService.returnFile("21a57f2fe765e1ae4a8bf15"
 				+ "d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
@@ -81,7 +82,7 @@ public class ServerServiceTest {
 	
 	@Test(expected=IndexOutOfBoundsException.class)
 	public void getFileByHashInstanceNotFoundTest()
-			throws NotSaveException, ParseException, InstanceNotFoundException {
+			throws NotSaveException, ParseException, InstanceNotFoundException, FileUnavaliableException {
 	
 		serverService.returnFile("21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343"
 				+ "d12a499d9c0592044d4");
@@ -89,11 +90,11 @@ public class ServerServiceTest {
 	
 	@Test
 	public void decrementDownloadLimitTest() throws NotSaveException, ParseException, 
-	InstanceNotFoundException {
+	InstanceNotFoundException, FileUnavaliableException {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 2, 
-				null, 123.33, hash);
+				null, null, 123.33, hash);
 		
 		assertEquals(file.getDownloadLimit(), 2);
 		serverService.returnFile(hash);
@@ -107,11 +108,11 @@ public class ServerServiceTest {
 	
 	@Test
 	public void notDecrementDownloadLimitTest() throws NotSaveException, ParseException, 
-	InstanceNotFoundException {
+	InstanceNotFoundException, FileUnavaliableException {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				null, 123.33, hash);
+				null, null, 123.33, hash);
 		
 		serverService.returnFile(hash);
 		assertEquals(file.getDownloadLimit(), -1);
@@ -122,11 +123,11 @@ public class ServerServiceTest {
 	
 	@Test
 	public void underDateLimitTest() throws NotSaveException, ParseException, 
-	InstanceNotFoundException {
+	InstanceNotFoundException, FileUnavaliableException {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				"12/02/2015 - 00:00:00", 123.33, hash);
+				null, "12/02/2015 - 00:00:00", 123.33, hash);
 		
 		FileInfo  file = serverService.returnFile(hash);
 		assertNull(file);
@@ -134,14 +135,36 @@ public class ServerServiceTest {
 	
 	@Test
 	public void highDateLimitTest() throws NotSaveException, ParseException, 
-	InstanceNotFoundException {
+	InstanceNotFoundException, FileUnavaliableException {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		FileInfo initialFile = serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				"12/12/2018 - 00:00:00", 123.33, hash);
+				null, "12/12/2018 - 00:00:00", 123.33, hash);
 		
 		FileInfo file = serverService.returnFile(hash);
 		assertEquals(initialFile, file);
+	}
+	
+	@Test(expected=FileUnavaliableException.class)
+	public void underReleaseDateTest() throws NotSaveException, ParseException,
+		InstanceNotFoundException, FileUnavaliableException {
+		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
+		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
+				"12/12/2016 - 00:00:00", "12/12/2018 - 00:00:00", 123.33, hash);
+		
+		serverService.returnFile(hash);
+	}
+	
+	@Test
+	public void OnTheRealeaseDateTest() throws NotSaveException, ParseException
+		, InstanceNotFoundException, FileUnavaliableException {
+		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
+		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
+				"12/04/2015 - 00:00:00", "12/12/2018 - 00:00:00", 123.33, hash);
+		FileInfo file = serverService.returnFile(hash);
+		
+		assertEquals(file.getHash(), hash);
+		assertEquals(file.getPath(), "~/nautilus/download1.aes");
 	}
 	
 	//@Test

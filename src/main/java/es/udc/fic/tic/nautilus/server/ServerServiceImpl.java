@@ -24,6 +24,7 @@ import org.hyperic.sigar.SigarProxyCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.model.FileInfoDao;
@@ -49,8 +50,8 @@ public class ServerServiceImpl implements ServerService {
 		return stats;
 	}
 
-	public FileInfo keepTheFile(String path, int downloadLimit, String dateLimit, double size
-			, String hash) throws NotSaveException, ParseException {
+	public FileInfo keepTheFile(String path, int downloadLimit, String releaseDate, 
+			String dateLimit, double size, String hash) throws NotSaveException, ParseException {
 		
 		FileInfo file = new FileInfo();
 		file.setPath(path);
@@ -61,6 +62,16 @@ public class ServerServiceImpl implements ServerService {
 			file.setDownloadLimit(-1);
 		} else {
 			file.setDownloadLimit(downloadLimit);
+		}
+		
+		/* Release date */
+		if (releaseDate == null) {
+			file.setReleaseDate(null);
+		} else {
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(df.parse(releaseDate));
+			file.setReleaseDate(cal);
 		}
 		
 		/* Date limit download */
@@ -81,8 +92,20 @@ public class ServerServiceImpl implements ServerService {
 		return file;
 	}
 	
-	public FileInfo returnFile(String hash) throws InstanceNotFoundException {
+	public FileInfo returnFile(String hash) throws InstanceNotFoundException, FileUnavaliableException {
 		FileInfo file = fileInfoDao.findByHash(hash);
+		
+		
+		/* Check the Release Date */
+		if (file.getReleaseDate() != null) {
+			Date date = Calendar.getInstance().getTime();
+			Calendar now = Calendar.getInstance();
+			now.setTime(date);
+			
+			if (now.before(file.getReleaseDate())) {
+				throw new FileUnavaliableException();
+			}
+		}
 		
 		/* Check the time limits */
 		if (file.getDateLimit() != null) {
@@ -91,7 +114,7 @@ public class ServerServiceImpl implements ServerService {
 			now.setTime(date);
 			
 			/* Check the dates */
-			if (now.after(file.getDateLimit())){
+			if (now.after(file.getDateLimit())) {
 				File realFile = new File(file.getPath());
 				realFile.delete();
 				return null;

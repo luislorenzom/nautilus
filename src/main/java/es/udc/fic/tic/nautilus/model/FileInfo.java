@@ -20,16 +20,18 @@ public class FileInfo {
 	private String hash;
 	private String path;
 	private int downloadLimit;
+	private Calendar releaseDate;
 	private Calendar dateLimit;
 	private double size;
 	
 	public FileInfo() {}
 	
-	public FileInfo(String hash, String path, int downloadLimit, Calendar dateLimit,
-			double size) {
+	public FileInfo(String hash, String path, int downloadLimit, Calendar releaseDate, 
+			Calendar dateLimit, double size) {
 		this.setHash(hash);
 		this.setPath(path);
 		this.setDownloadLimit(downloadLimit);
+		this.setReleaseDate(releaseDate);
 		this.setDateLimit(dateLimit);
 		this.setSize(size);
 	}
@@ -75,6 +77,14 @@ public class FileInfo {
 		this.dateLimit = dateLimit;
 	}
 	
+	public Calendar getReleaseDate() {
+		return releaseDate;
+	}
+
+	public void setReleaseDate(Calendar releaseDate) {
+		this.releaseDate = releaseDate;
+	}
+	
 	public double getSize() {
 		return size;
 	}
@@ -86,7 +96,7 @@ public class FileInfo {
 	@Override
 	public String toString() {
 		return "File [id="+id+", hash="+hash+", path="+path+", "
-				+ "downloadLimit="+downloadLimit+", dateLimit="+dateLimit+
+				+ "downloadLimit="+downloadLimit+", releaseDate="+releaseDate+"dateLimit="+dateLimit+
 				", size="+size+"]";
 	}
 }

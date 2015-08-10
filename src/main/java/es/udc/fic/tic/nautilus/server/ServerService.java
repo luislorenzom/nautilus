@@ -6,6 +6,7 @@ import javax.management.InstanceNotFoundException;
 
 import org.hyperic.sigar.SigarException;
 
+import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.util.SystemStatistics;
@@ -31,8 +32,8 @@ public interface ServerService {
 	 * @param String dateLimit
 	 * @throws NotSaveException, ParseException
 	 */
-	public FileInfo keepTheFile(String filePath, int downloadLimit, String dateLimit, 
-			double size, String hash) throws NotSaveException, ParseException;
+	public FileInfo keepTheFile(String filePath, int downloadLimit, String releaseDate, 
+			String dateLimit, double size, String hash) throws NotSaveException, ParseException;
 	
 	/**
 	 * This function search in the database for the file
@@ -41,6 +42,7 @@ public interface ServerService {
 	 * @param String hash
 	 * @return FileInfo
 	 * @throws InstanceNotFoundException 
+	 * @throws FileUnavaliableException 
 	 */
-	public FileInfo returnFile(String hash) throws InstanceNotFoundException;
+	public FileInfo returnFile(String hash) throws InstanceNotFoundException, FileUnavaliableException;
 }
