@@ -11,15 +11,17 @@ public class NautilusConfig {
 	private Float limitSpace;
 	private ModelConstanst.LANGUAGE language;
 	private List<ServerInfo> serverPreferences;
+	private String storageFolder;
 	
 	
 	public NautilusConfig(boolean serverAvailable, Float limitSpace, LANGUAGE language,
-			List<ServerInfo> serverPreferences) {
+			List<ServerInfo> serverPreferences, String storageFolder) {
 		super();
 		this.serverAvailable = serverAvailable;
 		this.limitSpace = limitSpace;
 		this.language = language;
 		this.serverPreferences = serverPreferences;
+		this.storageFolder = storageFolder;
 	}
 	
 	
@@ -53,5 +55,13 @@ public class NautilusConfig {
 	
 	public void setServerPreferences(List<ServerInfo> serverPreferences) {
 		this.serverPreferences = serverPreferences;
+	}
+
+	public String getStorageFolder() {
+		return storageFolder;
+	}
+
+	public void setStorageFolder(String storageFolder) {
+		this.storageFolder = storageFolder;
 	}
 }

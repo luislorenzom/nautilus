@@ -47,7 +47,7 @@ public class ConfigHandlerTest {
 		ServerInfo server2 = new ServerInfo("name2", "hash2");
 		serverPreferences.add(server1);
 		serverPreferences.add(server2);
-		NautilusConfig newConfig = new NautilusConfig(true, 45.6F, ModelConstanst.LANGUAGE.ES, serverPreferences);
+		NautilusConfig newConfig = new NautilusConfig(true, 45.6F, ModelConstanst.LANGUAGE.ES, serverPreferences, "~/nautilus_storage2");
 		configHandler.changeConfig(newConfig);
 		
 		// Recovery the file and check the assertions
@@ -63,6 +63,8 @@ public class ConfigHandlerTest {
 		assertEquals(config.getServerPreferences().get(0).getHash(), "hash1");
 		assertEquals(config.getServerPreferences().get(1).getName(), "name2");
 		assertEquals(config.getServerPreferences().get(1).getHash(), "hash2");
+		
+		assertEquals(config.getStorageFolder(), "~/nautilus_storage2");
 	}
 	
 	@Test
@@ -76,6 +78,14 @@ public class ConfigHandlerTest {
 		assertEquals(config.isServerAvailable(), false);
 		assertNull(config.getLimitSpace());
 		assertEquals(config.getLanguage(), ModelConstanst.LANGUAGE.EN);
-		assertTrue(config.getServerPreferences().isEmpty());	
+		assertTrue(config.getServerPreferences().isEmpty());
+		
+		if (System.getProperty("os.name").contains("win")) {
+			// Windows system
+			assertEquals(config.getStorageFolder(), System.getProperty("os.name") + "\nautilus_storage");
+		} else {
+			// Unix system
+			assertEquals(config.getStorageFolder(), System.getProperty("os.name") + "/nautilus_storage");
+		}
 	}
 }

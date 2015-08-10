@@ -25,6 +25,7 @@ public class ConfigHandler {
 		Float limitSpace = null;
 		ModelConstanst.LANGUAGE language = null;
 		List<ServerInfo> serverPreferences = new ArrayList<ServerInfo>();
+		String homeFolder = null;
 				
 		try {
 			// Generate Document
@@ -68,6 +69,8 @@ public class ConfigHandler {
 				}
 			}
 			
+			homeFolder = config.getChildTextTrim("StorageFolder");
+			
 		} catch ( IOException io ) {
 	        System.out.println( io.getMessage() );
 	    } catch ( JDOMException jdomex ) {
@@ -75,7 +78,7 @@ public class ConfigHandler {
 	    }
 		
 		NautilusConfig nautilusConfig = new NautilusConfig(serverAvaliable, 
-				limitSpace, language, serverPreferences);
+				limitSpace, language, serverPreferences, homeFolder);
 		
 		return nautilusConfig;
 	}
@@ -85,7 +88,7 @@ public class ConfigHandler {
 		File fileConfig = new File("config.xml");
 		fileConfig.delete();
 		// Generate a default config file
-		NautilusConfig config = new NautilusConfig(false, null, ModelConstanst.LANGUAGE.EN , null);
+		NautilusConfig config = new NautilusConfig(false, null, ModelConstanst.LANGUAGE.EN , null, getStorageFolder());
 		writeXMLFile(config);
 	}
 	
@@ -99,7 +102,7 @@ public class ConfigHandler {
 	
 	public void initializeConfig() {
 		// Default parameters
-		NautilusConfig config = new NautilusConfig(false, null, ModelConstanst.LANGUAGE.EN , null);
+		NautilusConfig config = new NautilusConfig(false, null, ModelConstanst.LANGUAGE.EN , null, getStorageFolder());
 		// Create the file
 		writeXMLFile(config);
 	}
@@ -108,6 +111,24 @@ public class ConfigHandler {
 	/* Private functions */
 	/*********************/
 	
+	/**
+	 * Function to get the storage folder
+	 */
+	private String getStorageFolder() {
+		String homeFolder;
+		if (System.getProperty("os.name").contains("win")) {
+			// Windows system
+			homeFolder = System.getProperty("os.name") + "\nautilus_storage";
+		} else {
+			// Unix system
+			homeFolder = System.getProperty("os.name") + "/nautilus_storage";
+		}
+		return homeFolder;
+	}
+	
+	/**
+	 * Function to write the config file
+	 */
 	private void writeXMLFile(NautilusConfig configParemeters) {
 		try {
 			// Root element
@@ -146,6 +167,9 @@ public class ConfigHandler {
 			}
 			
 			doc.getRootElement().addContent(servers);
+			
+			// Storage Folder
+			doc.getRootElement().addContent(new Element("StorageFolder").setText(configParemeters.getStorageFolder()));
 			
 			// Save the dom in xml file
 			XMLOutputter xmloutputter = new XMLOutputter();
