@@ -71,7 +71,7 @@ public class ServerServiceTest {
 	@AfterClass
 	public static void deteleConfigFile() {
 		new File("config.xml").delete();
-		new File("~/nautilus_storage").delete();
+		new File(System.getProperty("user.home")+"/nautilus_storage").delete();
 	}
 	
 	@Test

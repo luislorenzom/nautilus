@@ -12,8 +12,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +32,8 @@ public class ClientServiceTest {
 	private ClientService clientService;
 	
 	// Download a file to make the test
-	@Before
-	public void downloadFileForTest() throws IOException {
+	@BeforeClass
+	public static void downloadFileForTest() throws IOException {
 		URL url = new URL("http://www.lavozdegalicia.es/assets/img/logo.png");
 		URLConnection connection = url.openConnection();
 		
@@ -53,9 +53,11 @@ public class ClientServiceTest {
 	}
 	
 	// Delete the file we used to make the test
-	@After
-	public void deteleFileForTest() {
+	@AfterClass
+	public static void deteleFileForTest() {
 		new File("photo.png").delete();
+		new File("photo.png.aes").delete();
+		new File("dec_photo.png").delete();
 	}
 	
 	@Test
