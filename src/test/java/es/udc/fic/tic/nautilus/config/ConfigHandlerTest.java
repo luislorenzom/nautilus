@@ -9,15 +9,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import es.udc.fic.tic.nautilus.util.ModelConstanst;
 
 public class ConfigHandlerTest {
 	
-	@After
-	public void deleteConfigFile() {
+	@AfterClass
+	public static void deleteConfigFile() {
 		// Delete the config file generated in this test
 		File configFile = new File("config.xml");
 		configFile.delete();

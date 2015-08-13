@@ -17,7 +17,9 @@ import java.util.Calendar;
 
 import javax.management.InstanceNotFoundException;
 
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,10 +45,8 @@ public class ServerServiceTest {
 	private ServerService serverService;
 	
 	@BeforeClass
-	public static void initializeConfigFile() throws Exception {
-		ConfigHandler configHandler = new ConfigHandler();
-		configHandler.initializeConfig();
-		File folder = new File(configHandler.getConfig().getStorageFolder());
+	public static void initializeStorageFolder() throws Exception {
+		File folder = new File(System.getProperty("user.home")+"/nautilus_storage");
 		folder.mkdirs();
 		
 		/* download a file to proof the storage limit */
@@ -69,9 +69,22 @@ public class ServerServiceTest {
 	}
 	
 	@AfterClass
-	public static void deteleConfigFile() {
+	public static void deteleStorageFolder() {
+		File storageFile = new File(System.getProperty("user.home")+"/nautilus_storage");
+		deleteFolder(storageFile);
+		storageFile.delete();
+		
+	}
+	
+	@Before
+	public void createConfigFile() {
+		ConfigHandler configHandler = new ConfigHandler();
+		configHandler.initializeConfig();
+	}
+	
+	@After
+	public void deleteConfigFile() {
 		new File("config.xml").delete();
-		new File(System.getProperty("user.home")+"/nautilus_storage").delete();
 	}
 	
 	@Test
@@ -239,5 +252,21 @@ public class ServerServiceTest {
 		FileInfo fileSaved = serverService.returnFile(hash);
 		
 		assertEquals(fileSaved.getHash(), hash);
+	}
+	
+	/*********************
+	 * Private functions *
+	 *********************/
+	
+	private static void deleteFolder(File rootFolder) {
+		File[] files = rootFolder.listFiles();
+		
+		for (int x = 0; x < files.length; x++) {
+			if (files[x].isDirectory()) {
+				deleteFolder(files[x]);
+			} else {
+				files[x].delete();
+			}
+		}
 	}
 }
