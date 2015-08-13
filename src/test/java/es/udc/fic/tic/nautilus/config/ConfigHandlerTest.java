@@ -82,10 +82,10 @@ public class ConfigHandlerTest {
 		
 		if (System.getProperty("os.name").contains("win")) {
 			// Windows system
-			assertEquals(config.getStorageFolder(), System.getProperty("os.name") + "\nautilus_storage");
+			assertEquals(config.getStorageFolder(), System.getProperty("user.home") + "\nautilus_storage");
 		} else {
 			// Unix system
-			assertEquals(config.getStorageFolder(), System.getProperty("os.name") + "/nautilus_storage");
+			assertEquals(config.getStorageFolder(), System.getProperty("user.home") + "/nautilus_storage");
 		}
 	}
 }

@@ -118,10 +118,10 @@ public class ConfigHandler {
 		String homeFolder;
 		if (System.getProperty("os.name").contains("win")) {
 			// Windows system
-			homeFolder = System.getProperty("os.name") + "\nautilus_storage";
+			homeFolder = System.getProperty("user.home") + "\nautilus_storage";
 		} else {
 			// Unix system
-			homeFolder = System.getProperty("os.name") + "/nautilus_storage";
+			homeFolder = System.getProperty("user.home") + "/nautilus_storage";
 		}
 		return homeFolder;
 	}

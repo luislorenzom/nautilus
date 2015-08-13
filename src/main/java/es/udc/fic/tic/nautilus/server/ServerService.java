@@ -4,24 +4,12 @@ import java.text.ParseException;
 
 import javax.management.InstanceNotFoundException;
 
-import org.hyperic.sigar.SigarException;
-
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
+import es.udc.fic.tic.nautilus.expcetion.StorageLimitException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
-import es.udc.fic.tic.nautilus.util.SystemStatistics;
 
 public interface ServerService {
-	/**
-	 * This function obtain and analyze the specs of the
-	 * system and determinate if the computer is candidate
-	 * to make a server. 
-	 * 
-	 * @return Object "SystemStatics" with the required field
-	 * for the heuristic
-	 * @throws SigarException 
-	 */
-	public SystemStatistics obtainStatics() throws SigarException;
 	
 	/**
 	 * This method keep the file in the system and creates a
@@ -31,9 +19,10 @@ public interface ServerService {
 	 * @param int downloadList
 	 * @param String dateLimit
 	 * @throws NotSaveException, ParseException
+	 * @throws StorageLimitException 
 	 */
 	public FileInfo keepTheFile(String filePath, int downloadLimit, String releaseDate, 
-			String dateLimit, double size, String hash) throws NotSaveException, ParseException;
+			String dateLimit, double size, String hash) throws NotSaveException, ParseException, StorageLimitException;
 	
 	/**
 	 * This function search in the database for the file
