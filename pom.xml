@@ -23,6 +23,13 @@
   
   </properties>
 
+	<repositories>
+	  <repository>
+	    <id>tomp2p.net</id>
+	    <url>http://tomp2p.net/dev/mvn/</url>
+	  </repository>
+	</repositories>
+
   <dependencies>
   	
   	<!-- JUnit -->
@@ -119,7 +126,27 @@
 		<artifactId>hsqldb</artifactId>
 		<version>2.3.2</version>
 	</dependency>
-    
+	
+	<!-- Jdom -->	
+	<dependency>
+		<groupId>jdom</groupId>
+		<artifactId>jdom</artifactId>
+		<version>1.1</version>
+	</dependency>
+	
+	<!-- TomP2P -->
+	<dependency>
+	  <groupId>net.tomp2p</groupId>
+	  <artifactId>tomp2p-all</artifactId>
+	  <version>5.0-Beta8</version>
+	</dependency>
+	
+	<dependency>
+	  <groupId>net.tomp2p</groupId>
+	  <artifactId>tomp2p-examples</artifactId>
+	  <version>5.0-Beta8</version>
+	</dependency>
+	    
   </dependencies>
   
 </project>
