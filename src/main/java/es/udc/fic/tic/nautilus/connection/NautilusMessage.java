@@ -1,6 +1,7 @@
 package es.udc.fic.tic.nautilus.connection;
 
 import java.io.Serializable;
+import java.util.Calendar;
 
 public class NautilusMessage implements Serializable{
 	
@@ -8,6 +9,9 @@ public class NautilusMessage implements Serializable{
 	private int type;
 	private String hash;
 	private byte[] content;
+	private int downloadLimit;
+	private Calendar dateLimit;
+	private Calendar releaseDate;
 	
 	/* This constructor will be used to create file request */
 	public NautilusMessage(int type, String hash) {
@@ -18,11 +22,15 @@ public class NautilusMessage implements Serializable{
 	
 	
 	/* This constructor will be used to create a request to save file */
-	public NautilusMessage(int type, String hash, byte[] content) {
+	public NautilusMessage(int type, String hash, byte[] content, int downloadLimit,
+			Calendar dataLimit, Calendar releaseDate) {
 		super();
 		this.type = type;
 		this.hash = hash;
 		this.content = content;
+		this.downloadLimit = downloadLimit;
+		this.dateLimit = dataLimit;
+		this.releaseDate = releaseDate;
 	}
 
 	
@@ -34,6 +42,7 @@ public class NautilusMessage implements Serializable{
 		this.type = type;
 	}
 	
+	
 	public String getHash() {
 		return hash;
 	}
@@ -42,11 +51,39 @@ public class NautilusMessage implements Serializable{
 		this.hash = hash;
 	}
 	
+	
 	public byte[] getContent() {
 		return content;
 	}
 	
 	public void setContent(byte[] content) {
 		this.content = content;
+	}
+
+
+	public int getDownloadLimit() {
+		return downloadLimit;
+	}
+
+	public void setDownloadLimit(int downloadLimit) {
+		this.downloadLimit = downloadLimit;
+	}
+
+
+	public Calendar getDateLimit() {
+		return dateLimit;
+	}
+
+	public void setDateLimit(Calendar dateLimit) {
+		this.dateLimit = dateLimit;
+	}
+
+	
+	public Calendar getReleaseDate() {
+		return releaseDate;
+	}
+
+	public void setReleaseDate(Calendar releaseDate) {
+		this.releaseDate = releaseDate;
 	}
 }

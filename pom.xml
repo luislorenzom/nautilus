@@ -56,13 +56,6 @@
 		<scope>runtime</scope>
 	</dependency>
     
-    <!-- JXSE library (peer connections) -->
-    <dependency>
-    	<groupId>net.jxta</groupId>
-    	<artifactId>jxta-jxse</artifactId>
-    	<version>2.5</version>
-    </dependency>
-    
     <!-- BouncyCastle (cryptography library) -->
     <dependency>
 		<groupId>org.bouncycastle</groupId>
