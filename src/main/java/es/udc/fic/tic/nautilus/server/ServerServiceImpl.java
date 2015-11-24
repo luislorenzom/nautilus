@@ -27,16 +27,16 @@ public class ServerServiceImpl implements ServerService {
 	private FileInfoDao fileInfoDao;
 
 	public FileInfo keepTheFile(String path, int downloadLimit, String releaseDate, 
-			String dateLimit, double size, String hash) throws NotSaveException, ParseException, StorageLimitException {
+			String dateLimit, int size, String hash) throws NotSaveException, ParseException, StorageLimitException {
 		
 		FileInfo file = new FileInfo();
 		file.setPath(path);
 		file.setSize(size);
 		File storageFolder = new File(new ConfigHandler().getConfig().getStorageFolder());
-		Float limitSpace = new ConfigHandler().getConfig().getLimitSpace();
+		int limitSpace = new ConfigHandler().getConfig().getLimitSpace();
 		
 		/* Check the space limit in the config file */
-		if ((limitSpace != null) && (folderSize(storageFolder)/1000000F + size > limitSpace)) {
+		if ((limitSpace != 0) && (folderSize(storageFolder) + size > limitSpace)) {
 			throw new StorageLimitException();
 		}
 		

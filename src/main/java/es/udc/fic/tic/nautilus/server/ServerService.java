@@ -22,7 +22,7 @@ public interface ServerService {
 	 * @throws StorageLimitException 
 	 */
 	public FileInfo keepTheFile(String filePath, int downloadLimit, String releaseDate, 
-			String dateLimit, double size, String hash) throws NotSaveException, ParseException, StorageLimitException;
+			String dateLimit, int size, String hash) throws NotSaveException, ParseException, StorageLimitException;
 	
 	/**
 	 * This function search in the database for the file

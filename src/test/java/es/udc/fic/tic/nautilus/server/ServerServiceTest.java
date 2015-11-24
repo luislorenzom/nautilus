@@ -91,15 +91,14 @@ public class ServerServiceTest {
 	public void keepFileAllFieldsTest() throws NotSaveException, ParseException, StorageLimitException {
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 3, 
 				null, "17/12/2017 - 00:00:00", 
-				123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
+				12333, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(df.parse("17/12/2017 - 00:00:00"));
 		
 		assertEquals(file.getDownloadLimit(),3);
-		assertEquals("Wrong max possible value for the size",123.33,
-				file.getSize(), 0.01);
+		assertEquals(file.getSize(), 12333);
 		assertEquals(file.getPath(), "~/nautilus/download1.aes");
 		assertEquals(file.getDateLimit(), cal);
 		assertEquals(file.getHash(), 
@@ -110,7 +109,7 @@ public class ServerServiceTest {
 	public void keepFileWithDownloadLimitNegativeTest() throws NotSaveException, ParseException, StorageLimitException {
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", -3, 
 				null, "17/12/2017 - 00:00:00", 
-				123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
+				12333, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		assertEquals(file.getDownloadLimit(), -1);
 	}
@@ -118,7 +117,7 @@ public class ServerServiceTest {
 	@Test
 	public void keepFileWithoutDateLimitTest() throws NotSaveException, ParseException, StorageLimitException {
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 3, 
-				null, null, 123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
+				null, null, 12333, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		assertNull(file.getDateLimit());
 	}
@@ -128,7 +127,7 @@ public class ServerServiceTest {
 			throws NotSaveException, ParseException, InstanceNotFoundException, FileUnavaliableException, StorageLimitException {
 		
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", -1, 
-				null, null, 123.33, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
+				null, null, 12333, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		FileInfo fileRecovered = serverService.returnFile("21a57f2fe765e1ae4a8bf15"
 				+ "d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
@@ -149,7 +148,7 @@ public class ServerServiceTest {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 2, 
-				null, null, 123.33, hash);
+				null, null, 12333, hash);
 		
 		assertEquals(file.getDownloadLimit(), 2);
 		serverService.returnFile(hash);
@@ -167,7 +166,7 @@ public class ServerServiceTest {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				null, null, 123.33, hash);
+				null, null, 12333, hash);
 		
 		serverService.returnFile(hash);
 		assertEquals(file.getDownloadLimit(), -1);
@@ -182,7 +181,7 @@ public class ServerServiceTest {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				null, "12/02/2015 - 00:00:00", 123.33, hash);
+				null, "12/02/2015 - 00:00:00", 12333, hash);
 		
 		FileInfo  file = serverService.returnFile(hash);
 		assertNull(file);
@@ -194,7 +193,7 @@ public class ServerServiceTest {
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		FileInfo initialFile = serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				null, "12/12/2018 - 00:00:00", 123.33, hash);
+				null, "12/12/2018 - 00:00:00", 12333, hash);
 		
 		FileInfo file = serverService.returnFile(hash);
 		assertEquals(initialFile, file);
@@ -205,7 +204,7 @@ public class ServerServiceTest {
 		InstanceNotFoundException, FileUnavaliableException, StorageLimitException {
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				"12/12/2016 - 00:00:00", "12/12/2018 - 00:00:00", 123.33, hash);
+				"12/12/2016 - 00:00:00", "12/12/2018 - 00:00:00", 12333, hash);
 		
 		serverService.returnFile(hash);
 	}
@@ -215,7 +214,7 @@ public class ServerServiceTest {
 		, InstanceNotFoundException, FileUnavaliableException, StorageLimitException {
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				"12/04/2015 - 00:00:00", "12/12/2018 - 00:00:00", 123.33, hash);
+				"12/04/2015 - 00:00:00", "12/12/2018 - 00:00:00", 12333, hash);
 		FileInfo file = serverService.returnFile(hash);
 		
 		assertEquals(file.getHash(), hash);
@@ -226,12 +225,12 @@ public class ServerServiceTest {
 	public void underStorageLimit() throws Exception {
 		// Change the config parameter to add the storage limits
 		ConfigHandler configHandler = new ConfigHandler();
-		NautilusConfig newConfig = new NautilusConfig(true, 7.1F, ModelConstanst.LANGUAGE.ES, null, 
+		NautilusConfig newConfig = new NautilusConfig(true, 7340032, ModelConstanst.LANGUAGE.ES, null, 
 				System.getProperty("user.home")+"/nautilus_storage");
 		configHandler.changeConfig(newConfig);
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
-		serverService.keepTheFile("~/nautilus_storage/download1.aes", 0, null, null, 1.3, hash);
+		serverService.keepTheFile("~/nautilus_storage/download1.aes", 0, null, null, 1363148, hash);
 		
 		FileInfo fileSaved = serverService.returnFile(hash);
 		
@@ -242,12 +241,12 @@ public class ServerServiceTest {
 	public void onStorageLimit() throws Exception {
 		// Change the config parameter to add the storage limits
 		ConfigHandler configHandler = new ConfigHandler();
-		NautilusConfig newConfig = new NautilusConfig(true, 7.1F, ModelConstanst.LANGUAGE.ES, null, 
+		NautilusConfig newConfig = new NautilusConfig(true, 7340032, ModelConstanst.LANGUAGE.ES, null, 
 				System.getProperty("user.home")+"/nautilus_storage");
 		configHandler.changeConfig(newConfig);
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
-		serverService.keepTheFile("~/nautilus_storage/download1.aes", 0, null, null, 4.3, hash);
+		serverService.keepTheFile("~/nautilus_storage/download1.aes", 0, null, null, 4508876, hash);
 		
 		FileInfo fileSaved = serverService.returnFile(hash);
 		

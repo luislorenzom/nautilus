@@ -22,7 +22,7 @@ public class ConfigHandler {
 		File fileConfig = new File("config.xml");
 		
 		Boolean serverAvaliable = null;
-		Float limitSpace = null;
+		int limitSpace = 0;
 		ModelConstanst.LANGUAGE language = null;
 		List<ServerInfo> serverPreferences = new ArrayList<ServerInfo>();
 		String homeFolder = null;
@@ -37,10 +37,10 @@ public class ConfigHandler {
 			// Get the attributes
 			serverAvaliable = Boolean.valueOf(config.getChildTextTrim("serverAvailable"));
 
-			if (config.getChildTextTrim("limitSpace").equals("null")) {
-				limitSpace = null;
+			if (config.getChildTextTrim("limitSpace").equals("0")) {
+				limitSpace = 0;
 			} else {
-				limitSpace = Float.valueOf(config.getChildTextTrim("limitSpace"));
+				limitSpace = Integer.parseInt(config.getChildTextTrim("limitSpace"));
 			}
 			
 			if (config.getChildTextTrim("language").equals("EN")) {
@@ -88,7 +88,7 @@ public class ConfigHandler {
 		File fileConfig = new File("config.xml");
 		fileConfig.delete();
 		// Generate a default config file
-		NautilusConfig config = new NautilusConfig(false, null, ModelConstanst.LANGUAGE.EN , null, getStorageFolder());
+		NautilusConfig config = new NautilusConfig(false, 0, ModelConstanst.LANGUAGE.EN , null, getStorageFolder());
 		writeXMLFile(config);
 	}
 	
@@ -102,7 +102,7 @@ public class ConfigHandler {
 	
 	public void initializeConfig() {
 		// Default parameters
-		NautilusConfig config = new NautilusConfig(false, null, ModelConstanst.LANGUAGE.EN , null, getStorageFolder());
+		NautilusConfig config = new NautilusConfig(false, 0, ModelConstanst.LANGUAGE.EN , null, getStorageFolder());
 		// Create the file
 		writeXMLFile(config);
 	}
@@ -141,11 +141,11 @@ public class ConfigHandler {
 					String.valueOf(configParemeters.isServerAvailable())));
 			
 			// Limit Space
-			if (configParemeters.isServerAvailable() && (configParemeters.getLimitSpace() != null)) {
+			if (configParemeters.isServerAvailable() && (configParemeters.getLimitSpace() != 0)) {
 				doc.getRootElement().addContent(new Element("limitSpace").setText(
 						String.valueOf(configParemeters.getLimitSpace())));
 			} else {
-				doc.getRootElement().addContent(new Element("limitSpace").setText("null"));;	
+				doc.getRootElement().addContent(new Element("limitSpace").setText("0"));;	
 			}
 			
 			// Language

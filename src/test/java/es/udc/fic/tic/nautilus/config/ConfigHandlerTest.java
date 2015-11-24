@@ -2,7 +2,6 @@ package es.udc.fic.tic.nautilus.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -31,7 +30,7 @@ public class ConfigHandlerTest {
 		
 		// Check with default configuration
 		assertEquals(config.isServerAvailable(), false);
-		assertNull(config.getLimitSpace());
+		assertEquals(config.getLimitSpace(), 0);
 		assertEquals(config.getLanguage(), ModelConstanst.LANGUAGE.EN);
 		assertTrue(config.getServerPreferences().isEmpty());
 	}
@@ -47,14 +46,13 @@ public class ConfigHandlerTest {
 		ServerInfo server2 = new ServerInfo("name2", "hash2");
 		serverPreferences.add(server1);
 		serverPreferences.add(server2);
-		NautilusConfig newConfig = new NautilusConfig(true, 45.6F, ModelConstanst.LANGUAGE.ES, serverPreferences, "~/nautilus_storage2");
+		NautilusConfig newConfig = new NautilusConfig(true, 47815065, ModelConstanst.LANGUAGE.ES, serverPreferences, "~/nautilus_storage2");
 		configHandler.changeConfig(newConfig);
 		
 		// Recovery the file and check the assertions
 		NautilusConfig config = configHandler.getConfig();
 		assertEquals(config.isServerAvailable(), true);
-		assertEquals("Wrong max possible value for the size",45.6F,
-				config.getLimitSpace(), 0.01);
+		assertEquals(config.getLimitSpace(), 47815065);
 		assertEquals(config.getLanguage(), ModelConstanst.LANGUAGE.ES);
 		assertEquals(config.getServerPreferences().size(), 2);
 		
@@ -76,7 +74,7 @@ public class ConfigHandlerTest {
 		
 		// Check the assertions
 		assertEquals(config.isServerAvailable(), false);
-		assertNull(config.getLimitSpace());
+		assertEquals(config.getLimitSpace(), 0);
 		assertEquals(config.getLanguage(), ModelConstanst.LANGUAGE.EN);
 		assertTrue(config.getServerPreferences().isEmpty());
 		

@@ -22,12 +22,12 @@ public class FileInfo {
 	private int downloadLimit;
 	private Calendar releaseDate;
 	private Calendar dateLimit;
-	private double size;
+	private int size;
 	
 	public FileInfo() {}
 	
 	public FileInfo(String hash, String path, int downloadLimit, Calendar releaseDate, 
-			Calendar dateLimit, double size) {
+			Calendar dateLimit, int size) {
 		this.setHash(hash);
 		this.setPath(path);
 		this.setDownloadLimit(downloadLimit);
@@ -85,11 +85,11 @@ public class FileInfo {
 		this.releaseDate = releaseDate;
 	}
 	
-	public double getSize() {
+	public int getSize() {
 		return size;
 	}
 
-	public void setSize(double size) {
+	public void setSize(int size) {
 		this.size = size;
 	}
 	
