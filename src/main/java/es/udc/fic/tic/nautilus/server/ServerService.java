@@ -1,6 +1,7 @@
 package es.udc.fic.tic.nautilus.server;
 
 import java.text.ParseException;
+import java.util.Calendar;
 
 import javax.management.InstanceNotFoundException;
 
@@ -21,8 +22,8 @@ public interface ServerService {
 	 * @throws NotSaveException, ParseException
 	 * @throws StorageLimitException 
 	 */
-	public FileInfo keepTheFile(String filePath, int downloadLimit, String releaseDate, 
-			String dateLimit, int size, String hash) throws NotSaveException, ParseException, StorageLimitException;
+	public FileInfo keepTheFile(String filePath, int downloadLimit, Calendar releaseDate, 
+			Calendar dateLimit, int size, String hash) throws NotSaveException, ParseException, StorageLimitException;
 	
 	/**
 	 * This function search in the database for the file

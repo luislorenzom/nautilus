@@ -89,8 +89,13 @@ public class ServerServiceTest {
 	
 	@Test
 	public void keepFileAllFieldsTest() throws NotSaveException, ParseException, StorageLimitException {
+		
+		DateFormat df_0 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_0 = Calendar.getInstance();
+		cal_0.setTime(df_0.parse("17/12/2017 - 00:00:00"));
+		
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", 3, 
-				null, "17/12/2017 - 00:00:00", 
+				null, cal_0, 
 				12333, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
@@ -107,8 +112,12 @@ public class ServerServiceTest {
 	
 	@Test
 	public void keepFileWithDownloadLimitNegativeTest() throws NotSaveException, ParseException, StorageLimitException {
+		DateFormat df_0 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_0 = Calendar.getInstance();
+		cal_0.setTime(df_0.parse("17/12/2017 - 00:00:00"));
+		
 		FileInfo file = serverService.keepTheFile("~/nautilus/download1.aes", -3, 
-				null, "17/12/2017 - 00:00:00", 
+				null, cal_0, 
 				12333, "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4");
 		
 		assertEquals(file.getDownloadLimit(), -1);
@@ -179,9 +188,13 @@ public class ServerServiceTest {
 	public void underDateLimitTest() throws NotSaveException, ParseException, 
 	InstanceNotFoundException, FileUnavaliableException, StorageLimitException {
 		
+		DateFormat df_0 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_0 = Calendar.getInstance();
+		cal_0.setTime(df_0.parse("12/02/2015 - 00:00:00"));
+		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				null, "12/02/2015 - 00:00:00", 12333, hash);
+				null, cal_0, 12333, hash);
 		
 		FileInfo  file = serverService.returnFile(hash);
 		assertNull(file);
@@ -191,9 +204,13 @@ public class ServerServiceTest {
 	public void highDateLimitTest() throws NotSaveException, ParseException, 
 	InstanceNotFoundException, FileUnavaliableException, StorageLimitException {
 		
+		DateFormat df_0 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_0 = Calendar.getInstance();
+		cal_0.setTime(df_0.parse("12/12/2018 - 00:00:00"));
+		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		FileInfo initialFile = serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				null, "12/12/2018 - 00:00:00", 12333, hash);
+				null, cal_0, 12333, hash);
 		
 		FileInfo file = serverService.returnFile(hash);
 		assertEquals(initialFile, file);
@@ -202,9 +219,18 @@ public class ServerServiceTest {
 	@Test(expected=FileUnavaliableException.class)
 	public void underReleaseDateTest() throws NotSaveException, ParseException,
 		InstanceNotFoundException, FileUnavaliableException, StorageLimitException {
+		
+		DateFormat df_0 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_0 = Calendar.getInstance();
+		cal_0.setTime(df_0.parse("12/12/2016 - 00:00:00"));
+		
+		DateFormat df_1 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_1 = Calendar.getInstance();
+		cal_1.setTime(df_1.parse("12/12/2018 - 00:00:00"));
+		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
 		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				"12/12/2016 - 00:00:00", "12/12/2018 - 00:00:00", 12333, hash);
+				cal_0, cal_1, 12333, hash);
 		
 		serverService.returnFile(hash);
 	}
@@ -212,9 +238,19 @@ public class ServerServiceTest {
 	@Test
 	public void onTheRealeaseDateTest() throws NotSaveException, ParseException
 		, InstanceNotFoundException, FileUnavaliableException, StorageLimitException {
+		
+		DateFormat df_0 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_0 = Calendar.getInstance();
+		cal_0.setTime(df_0.parse("12/04/2015 - 00:00:00"));
+		
+		DateFormat df_1 = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		Calendar cal_1 = Calendar.getInstance();
+		cal_1.setTime(df_1.parse("12/12/2018 - 00:00:00"));
+		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
+		
 		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
-				"12/04/2015 - 00:00:00", "12/12/2018 - 00:00:00", 12333, hash);
+				cal_0, cal_1, 12333, hash);
 		FileInfo file = serverService.returnFile(hash);
 		
 		assertEquals(file.getHash(), hash);

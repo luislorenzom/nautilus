@@ -1,9 +1,7 @@
 package es.udc.fic.tic.nautilus.server;
 
 import java.io.File;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -26,8 +24,8 @@ public class ServerServiceImpl implements ServerService {
 	@Autowired
 	private FileInfoDao fileInfoDao;
 
-	public FileInfo keepTheFile(String path, int downloadLimit, String releaseDate, 
-			String dateLimit, int size, String hash) throws NotSaveException, ParseException, StorageLimitException {
+	public FileInfo keepTheFile(String path, int downloadLimit, Calendar releaseDate, 
+			Calendar dateLimit, int size, String hash) throws NotSaveException, ParseException, StorageLimitException {
 		
 		FileInfo file = new FileInfo();
 		file.setPath(path);
@@ -51,20 +49,20 @@ public class ServerServiceImpl implements ServerService {
 		if (releaseDate == null) {
 			file.setReleaseDate(null);
 		} else {
-			DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+			/*DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(df.parse(releaseDate));
-			file.setReleaseDate(cal);
+			cal.setTime(df.parse(releaseDate));*/
+			file.setReleaseDate(releaseDate);
 		}
 		
 		/* Date limit download */
 		if (dateLimit == null) {
 			file.setDateLimit(null);
 		} else {
-			DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+			/*DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(df.parse(dateLimit));
-			file.setDateLimit(cal);
+			cal.setTime(df.parse(dateLimit));*/
+			file.setDateLimit(dateLimit);
 		}
 		
 		/* Add hash */
