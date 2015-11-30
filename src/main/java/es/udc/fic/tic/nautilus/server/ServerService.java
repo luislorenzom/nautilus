@@ -7,7 +7,6 @@ import javax.management.InstanceNotFoundException;
 
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
-import es.udc.fic.tic.nautilus.expcetion.StorageLimitException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 
 public interface ServerService {
@@ -23,7 +22,7 @@ public interface ServerService {
 	 * @throws StorageLimitException 
 	 */
 	public FileInfo keepTheFile(String filePath, int downloadLimit, Calendar releaseDate, 
-			Calendar dateLimit, int size, String hash) throws NotSaveException, ParseException, StorageLimitException;
+			Calendar dateLimit, long size, String hash) throws NotSaveException, ParseException;
 	
 	/**
 	 * This function search in the database for the file

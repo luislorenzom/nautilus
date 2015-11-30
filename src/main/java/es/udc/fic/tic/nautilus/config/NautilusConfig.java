@@ -8,13 +8,13 @@ import es.udc.fic.tic.nautilus.util.ModelConstanst.LANGUAGE;
 public class NautilusConfig {
 
 	private boolean serverAvailable;
-	private int limitSpace;
+	private long limitSpace;
 	private ModelConstanst.LANGUAGE language;
 	private List<ServerInfo> serverPreferences;
 	private String storageFolder;
 	
 	
-	public NautilusConfig(boolean serverAvailable, int limitSpace, LANGUAGE language,
+	public NautilusConfig(boolean serverAvailable, long limitSpace, LANGUAGE language,
 			List<ServerInfo> serverPreferences, String storageFolder) {
 		super();
 		this.serverAvailable = serverAvailable;
@@ -33,11 +33,11 @@ public class NautilusConfig {
 		this.serverAvailable = serverAvailable;
 	}
 	
-	public int getLimitSpace() {
+	public long getLimitSpace() {
 		return limitSpace;
 	}
 	
-	public void setLimitSpace(int limitSpace) {
+	public void setLimitSpace(long limitSpace) {
 		this.limitSpace = limitSpace;
 	}
 	

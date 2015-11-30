@@ -29,12 +29,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
-import es.udc.fic.tic.nautilus.config.NautilusConfig;
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.expcetion.StorageLimitException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
-import es.udc.fic.tic.nautilus.util.ModelConstanst;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { SPRING_CONFIG_FILE, SPRING_CONFIG_TEST_FILE })
@@ -256,7 +254,7 @@ public class ServerServiceTest {
 		assertEquals(file.getHash(), hash);
 		assertEquals(file.getPath(), "~/nautilus/download1.aes");
 	}
-	
+	/*
 	@Test
 	public void underStorageLimit() throws Exception {
 		// Change the config parameter to add the storage limits
@@ -287,7 +285,7 @@ public class ServerServiceTest {
 		FileInfo fileSaved = serverService.returnFile(hash);
 		
 		assertEquals(fileSaved.getHash(), hash);
-	}
+	}*/
 	
 	/*********************
 	 * Private functions *

@@ -2,6 +2,7 @@ package es.udc.fic.tic.nautilus.connection;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import es.udc.fic.tic.nautilus.client.ClientService;
+import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.expcetion.HashGenerationException;
+import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.server.ServerService;
 
 @Service("connectionUtilities")
@@ -23,20 +26,51 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	@Autowired
 	private ClientService clientService;
 
+	ConfigHandler configHandler = new ConfigHandler();
+	
 	@Override
 	public byte[] processMessageTypeZero(NautilusMessage msg) {
-		/* TODO haciendo uso del servicio del server, buscar el 
-		 * fichero con el que coincida el hash */
+		if (msg != null) {
+			try {
+				FileInfo fileInfo = serverService.returnFile(msg.getHash());
+				File file = new File(fileInfo.getPath());
+				return readContentIntoByteArray(file);
+			} catch(Exception e) {
+				return null;
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public int processMessageTypeOne(NautilusMessage msg) {
-		/* TODO haciendo uso del servicio del server, concretamente la funcion 
-		 * de guardar,si hay alguna excepcion se encapsula y se deuelve -1 en 
-		 * caso contrario se guarda el fichero en el directorio indicado en la
-		 * configuracion y se genera la entidad en la base de datos */
-		return 0;
+		/* Check if the message is not null and this node is a server */
+		if ((msg != null) && (configHandler.getConfig().isServerAvailable())) {
+			int byteSize = msg.getContent().length;
+			/* Check if can save the file in the node */
+			if (CheckFileSize(byteSize)) {
+				String filePath = configHandler.getConfig().getStorageFolder()+"/"+msg.getHash()+".aes256";
+				try {
+					FileOutputStream fos = new FileOutputStream(filePath);
+					fos.write(msg.getContent());
+					fos.close();
+					
+					FileInfo fileInfo = serverService.keepTheFile(filePath, msg.getDownloadLimit(), msg.getReleaseDate(), 
+							msg.getDateLimit(), byteSize, msg.getHash());
+					
+					if (fileInfo != null) {
+						return 1;
+					} else {
+						return -1;
+					}
+					
+				} catch (Exception e){
+					return -1;
+				}
+			}
+			return -1;
+		}
+		return -1;
 	}
 
 	@Override
@@ -104,6 +138,53 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	                .substring(1));
 	    }
 	    return stringBuffer.toString();
+	}
+	
+	/**
+	 * This function evaluate if the file can be save in the peer in
+	 * relation with configuration file
+	 * 
+	 * @param float fileSize
+	 * @return boolean that represents if the peer can save the file or not
+	 */
+	private boolean CheckFileSize(int fileSize) {
+		long limit = configHandler.getConfig().getLimitSpace();
+		long folderSize = folderSize(new File(configHandler.getConfig().getStorageFolder()));
+		
+		if (folderSize + fileSize > limit) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * This function calculate the size of directory
+	 */
+	private long folderSize(File directory) {
+	    long length = 0;
+	    for (File file : directory.listFiles()) {
+	        if (file.isFile())
+	            length += file.length();
+	        else
+	            length += folderSize(file);
+	    }
+	    return length;
+	}
+	
+	/* this function get the byteArray from a file */
+	private byte[] readContentIntoByteArray(File file) {
+	      FileInputStream fileInputStream = null;
+	      byte[] bFile = new byte[(int) file.length()];
+	      try {
+	         //convert file into array of bytes
+	         fileInputStream = new FileInputStream(file);
+	         fileInputStream.read(bFile);
+	         fileInputStream.close();
+	      }
+	      catch (Exception e) {
+	         e.printStackTrace();
+	      }
+	      return bFile;
 	}
 	
 	/* TODO hacer un funcion que en base a la lista de preferencias de servidor buscar 2

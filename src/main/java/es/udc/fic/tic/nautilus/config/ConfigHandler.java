@@ -22,7 +22,7 @@ public class ConfigHandler {
 		File fileConfig = new File("config.xml");
 		
 		Boolean serverAvaliable = null;
-		int limitSpace = 0;
+		long limitSpace = 0;
 		ModelConstanst.LANGUAGE language = null;
 		List<ServerInfo> serverPreferences = new ArrayList<ServerInfo>();
 		String homeFolder = null;
@@ -40,7 +40,7 @@ public class ConfigHandler {
 			if (config.getChildTextTrim("limitSpace").equals("0")) {
 				limitSpace = 0;
 			} else {
-				limitSpace = Integer.parseInt(config.getChildTextTrim("limitSpace"));
+				limitSpace = Long.parseLong(config.getChildTextTrim("limitSpace"));
 			}
 			
 			if (config.getChildTextTrim("language").equals("EN")) {
