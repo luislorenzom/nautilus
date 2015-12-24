@@ -9,6 +9,7 @@ import javax.management.InstanceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
@@ -21,7 +22,8 @@ public class ServerServiceImpl implements ServerService {
 	
 	@Autowired
 	private FileInfoDao fileInfoDao;
-
+	
+	@Transactional
 	public FileInfo keepTheFile(String path, int downloadLimit, Calendar releaseDate, 
 			Calendar dateLimit, long size, String hash) throws NotSaveException, ParseException {
 		
