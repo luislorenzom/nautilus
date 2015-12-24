@@ -14,9 +14,10 @@
 
     <!-- Enable component scanning for defining beans with annotations. -->
     <context:component-scan base-package="es.udc.fic.tic.nautilus"/>
-
+	
+	<!-- Data Source. -->
 	 <bean id="dataSource" 
-        class="org.springframework.jdbc.datasource.DriverManagerDataSource" p:url="jdbc:hsqldb:file:~/Documents/nautilus;ifexists=false" 
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource" p:url="jdbc:hsqldb:file:db;shutdown=true" 
         p:driverClassName="org.hsqldb.jdbcDriver" p:username="sa" p:password="" />
     
 	<!-- Hibernate Session Factory -->
