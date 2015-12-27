@@ -66,6 +66,7 @@ public class ServerServiceImpl implements ServerService {
 		return file;
 	}
 	
+	@Transactional
 	public FileInfo returnFile(String hash) throws InstanceNotFoundException, FileUnavaliableException {
 		FileInfo file = fileInfoDao.findByHash(hash);
 		
@@ -91,6 +92,7 @@ public class ServerServiceImpl implements ServerService {
 			if (now.after(file.getDateLimit())) {
 				File realFile = new File(file.getPath());
 				realFile.delete();
+				fileInfoDao.delete(file);
 				return null;
 			}
 		}
@@ -102,6 +104,8 @@ public class ServerServiceImpl implements ServerService {
 		} else {
 			/* decrement the limit */
 			int downloadLimit = file.getDownloadLimit();
+			file.setDownloadLimit(downloadLimit-1);
+			//if (file.getDownloadLimit() == 0) {
 			if (downloadLimit == 0) {
 				/* if limit is zero then is deleted */
 				fileInfoDao.delete(file);
@@ -109,7 +113,6 @@ public class ServerServiceImpl implements ServerService {
 				realFile.delete();
 				return null;
 			}
-			file.setDownloadLimit(downloadLimit-1);
 			return file;
 		}
 	}

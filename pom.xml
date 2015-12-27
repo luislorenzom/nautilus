@@ -12,6 +12,11 @@
 
   <properties>
    
+    <!--= Set compiler version for linux development environment =-->
+	<maven.compiler.source>1.7</maven.compiler.source>
+	<maven.compiler.target>1.7</maven.compiler.target>
+	<!-- ====================================================== -->
+   
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     
 	<!-- Package versions -->
@@ -63,14 +68,14 @@
 		<version>1.52</version>
 	</dependency>
 	
-	<!-- JavaFX webview interface -->
+	<!-- JavaFX webview interface 
     <dependency>
         <groupId>javafx</groupId>
         <artifactId>javafx</artifactId>
         <version>2.1</version>
         <scope>system</scope>
         <systemPath>${java.home}/lib/jfxrt.jar</systemPath>
-    </dependency>
+    </dependency> -->
     
     <!-- Fuse get info of system -->
     <dependency>
@@ -141,5 +146,62 @@
 	</dependency>
 	    
   </dependencies>
+  
+  <build>
+ 	<plugins>
+		<!-- mvn package -Dmaven.test.skip=true -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-shade-plugin</artifactId>
+			<version>1.7</version>
+ 
+  			<executions>
+    			
+    			<execution>
+      				<phase>package</phase>
+      				<goals>
+        				<goal>shade</goal>
+      				</goals>
+      				<configuration>
+        				<finalName>nautilus-${version}</finalName>
+        				<shadedArtifactAttached>true</shadedArtifactAttached>
+        				<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+        				
+        				<transformers>
+          					<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+            					<mainClass>es.udc.fic.tic.nautilus.Main</mainClass>
+          					</transformer>
+          				
+	          				<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+	            				<resource>META-INF/spring.handlers</resource>
+	          				</transformer>
+          
+	          				<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+	            				<resource>META-INF/spring.schemas</resource>
+	          				</transformer>
+          
+	          				<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+	            				<resource>META-INF/spring.tooling</resource>
+	          				</transformer>
+        				</transformers>
+           				
+           				<filters>
+            				<filter>
+              					<artifact>*:*</artifact>
+              					
+              					<excludes>
+                					<exclude>META-INF/*.SF</exclude>
+                					<exclude>META-INF/*.DSA</exclude>
+                					<exclude>META-INF/*.RSA</exclude>
+              					</excludes>
+            				</filter>
+          				</filters>
+      				</configuration>
+    			</execution>
+  			</executions>
+		</plugin>
+		
+	</plugins>
+	</build> 
   
 </project>

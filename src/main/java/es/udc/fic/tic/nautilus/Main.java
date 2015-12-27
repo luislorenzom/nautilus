@@ -1,11 +1,14 @@
 package es.udc.fic.tic.nautilus;
 
+import java.io.File;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
-import es.udc.fic.tic.nautilus.server.ServerService;
+import es.udc.fic.tic.nautilus.config.ConfigHandler;
+import es.udc.fic.tic.nautilus.connection.Server;
 
 @Component
 public class Main {
@@ -20,11 +23,17 @@ public class Main {
 	}
 	
 	@Autowired
-	private ServerService serverService;
+	private Server server;
 	
 	private void start(String[] args) {
+		if (!(new File("config.xml").exists())) {
+			ConfigHandler configHandler = new ConfigHandler();
+			configHandler.initializeConfig();
+		}
+		/*TODO: comprobar que existe la carpeta para almacenar o tomar
+		 * comprobar el espacio donado disponible contra la base de datos*/
 		try {
-			serverService.keepTheFile("/home/file.java", 7, null, null, 28737, "hash17");
+			server.startServer();
 		} catch (Exception e) {
 			//System.err.println("Error!");
 			e.printStackTrace();
