@@ -149,6 +149,12 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	 */
 	private boolean CheckFileSize(int fileSize) {
 		long limit = configHandler.getConfig().getLimitSpace();
+		
+		/* all disk */
+		if (limit <= -1) {
+			return true;
+		}
+		
 		long folderSize = folderSize(new File(configHandler.getConfig().getStorageFolder()));
 		
 		if (folderSize + fileSize > limit) {
