@@ -41,9 +41,9 @@ public class ConfigHandlerTest {
 		File configFile = new File("config.xml");
 		assertNotNull(configFile);
 		ConfigHandler configHandler = new ConfigHandler();
-		List<ServerInfo> serverPreferences = new ArrayList<>();
-		ServerInfo server1 = new ServerInfo("name1", "hash1");
-		ServerInfo server2 = new ServerInfo("name2", "hash2");
+		List<String> serverPreferences = new ArrayList<>();
+		String server1 = "192.168.1.43";
+		String server2 = "192.168.1.72";
 		serverPreferences.add(server1);
 		serverPreferences.add(server2);
 		NautilusConfig newConfig = new NautilusConfig(true, 47815065, ModelConstanst.LANGUAGE.ES, serverPreferences, "~/nautilus_storage2");
@@ -56,11 +56,8 @@ public class ConfigHandlerTest {
 		assertEquals(config.getLanguage(), ModelConstanst.LANGUAGE.ES);
 		assertEquals(config.getServerPreferences().size(), 2);
 		
-		
-		assertEquals(config.getServerPreferences().get(0).getName(), "name1");
-		assertEquals(config.getServerPreferences().get(0).getHash(), "hash1");
-		assertEquals(config.getServerPreferences().get(1).getName(), "name2");
-		assertEquals(config.getServerPreferences().get(1).getHash(), "hash2");
+		assertEquals(config.getServerPreferences().get(0), "192.168.1.43");
+		assertEquals(config.getServerPreferences().get(1), "192.168.1.72");
 		
 		assertEquals(config.getStorageFolder(), "~/nautilus_storage2");
 	}

@@ -8,6 +8,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
+import es.udc.fic.tic.nautilus.connection.Client;
 import es.udc.fic.tic.nautilus.connection.Server;
 
 @Component
@@ -25,6 +26,9 @@ public class Main {
 	@Autowired
 	private Server server;
 	
+	@Autowired
+	private Client client;
+	
 	private void start(String[] args) {
 		if (!(new File("config.xml").exists())) {
 			ConfigHandler configHandler = new ConfigHandler();
@@ -33,7 +37,8 @@ public class Main {
 		/*TODO: comprobar que existe la carpeta para almacenar o tomar
 		 * comprobar el espacio donado disponible contra la base de datos*/
 		try {
-			server.startServer();
+			//server.startServer();
+			client.saveFileInNetwork("apache-aurora-0.8.0.tar.gz", 0, null, null);
 		} catch (Exception e) {
 			//System.err.println("Error!");
 			e.printStackTrace();

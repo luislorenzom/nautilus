@@ -24,7 +24,7 @@ public class ConfigHandler {
 		Boolean serverAvaliable = null;
 		long limitSpace = 0;
 		ModelConstanst.LANGUAGE language = null;
-		List<ServerInfo> serverPreferences = new ArrayList<ServerInfo>();
+		List<String> serverPreferences = new ArrayList<String>();
 		String homeFolder = null;
 				
 		try {
@@ -60,11 +60,7 @@ public class ConfigHandler {
 			if (listServer.size() > 0) {
 				for ( int i = 0; i < listServer.size(); i++ ) {
 					Element serverElement = (Element)listServer.get(i);
-					
-					String name = serverElement.getChildText("name");
-					String hash = serverElement.getChildText("hash");
-					
-					ServerInfo server = new ServerInfo(name, hash);
+					String server = serverElement.getText();
 					serverPreferences.add(server);
 				}
 			}
@@ -156,13 +152,10 @@ public class ConfigHandler {
 			
 			if (configParemeters.getServerPreferences() != null) {
 				
-				for (ServerInfo serverInfo : configParemeters.getServerPreferences()) {
-					// Server Info
-					Element server = new Element("server");
-					server.addContent(new Element("name").setText(serverInfo.getName()));
-					server.addContent(new Element("hash").setText(serverInfo.getHash()));
-					
-					servers.addContent(server);
+				for (String server : configParemeters.getServerPreferences()) {
+					// Server ip
+					Element serverElement = new Element("server").setText(server);
+					servers.addContent(serverElement);
 				}
 			}
 			

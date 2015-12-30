@@ -8,9 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import javax.crypto.Cipher;
@@ -18,9 +15,8 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
-import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.springframework.stereotype.Service;
 
 import es.udc.fic.tic.nautilus.util.Metadata;
@@ -31,8 +27,7 @@ import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
 @Service("clientService")
 public class ClientServiceImpl implements ClientService {
 	
-	// FIXME el chunkSize debe depender del fichero
-	private long chunkSize = 1024;	//1KB
+	//private long chunkSize = 2199;
 
 	public void fileSplit(String filePath) throws IOException {
 		// Open the file
@@ -41,6 +36,8 @@ public class ClientServiceImpl implements ClientService {
 		// Get the file length
 		File file = new File(filePath);
 		long fileSize = file.length();
+		
+		long chunkSize = generateChunkSize(fileSize);
 		
 		// Loop for each full chunk
 		int subfile;
@@ -94,7 +91,7 @@ public class ClientServiceImpl implements ClientService {
 		out.close();
 	}
 
-	public File encryptFile(String filePath, ENCRYPT_ALG algorithm) 
+	public SecretKey encryptFile(String filePath, ENCRYPT_ALG algorithm) 
 			throws Exception {
 		
 		switch (algorithm) {
@@ -104,8 +101,7 @@ public class ClientServiceImpl implements ClientService {
 
 		case AES:
 			// Encrypt
-			this.encryptWithAES(filePath);
-			break;
+			return encryptWithAES(filePath);
 		}
 		return null;
 	}
@@ -120,7 +116,7 @@ public class ClientServiceImpl implements ClientService {
 
 		case AES:
 			// Decrypt
-			this.decryptWithAES(filePath);
+			this.decryptWithAES(filePath, keyPath);
 			break;
 		}
 		return null;
@@ -130,17 +126,6 @@ public class ClientServiceImpl implements ClientService {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	public void sendFile(List<File> files) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public List<File> recoveryFiles(File nodeList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	
 	/*********************
 	 * Private functions *
@@ -168,18 +153,42 @@ public class ClientServiceImpl implements ClientService {
 	}
 	
 	/**
+	 * This function return the long wich represent the chunck size
+	 * 
+	 * @param long fileSize
+	 * @return long chunkSize
+	 */
+	private long generateChunkSize(long fileSize) {
+		
+		/* less than 50mb implies split in three parts */
+		if (fileSize <= 52428800) {
+			return (fileSize / 2) - 100;
+		}
+		
+		/* less than 250mb implies split in five parts */
+		if (fileSize <= 262144000) {
+			return (fileSize / 4) - 100;
+		}
+		
+		/* less than 1gb implies split in nine parts */
+		if (fileSize <= 1073741824) {
+			return (fileSize / 8) - 100;
+		}
+		
+		/* Default */
+		return (fileSize / 16) - 100;
+	}
+	
+	
+	/**
 	 * This function Encrypt the file and generate the keyFile
 	 * 
 	 * @param fileContent
 	 * @param fileName
 	 * 
-	 * @throws NoSuchAlgorithmException
-	 * @throws DataLengthException
-	 * @throws IllegalStateException
-	 * @throws InvalidCipherTextException
-	 * @throws IOException
+	 * @throws Exception
 	 */
-	private void encryptWithAES(String fileName) throws Exception {
+	private SecretKey encryptWithAES(String fileName) throws Exception {
 		// Generate Key
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 		keyGen.init(256);
@@ -188,32 +197,43 @@ public class ClientServiceImpl implements ClientService {
 		Cipher aesCipher = Cipher.getInstance("AES");
 		aesCipher.init(Cipher.ENCRYPT_MODE, key);
 		
-		try(FileOutputStream fos = new FileOutputStream(fileName+".aes")) {
-			//creating object output stream to write objects to file
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-			oos.writeObject(key);  //saving key to file for use during decryption
-			 
+		try(FileOutputStream fos = new FileOutputStream(fileName+".aes256")) {			
+			
+			// Code for save a key in a file
+			/*String fileNameKey = generateKeyName(fileName);
+			@SuppressWarnings("resource")
+			FileOutputStream fos_key = new FileOutputStream(fileNameKey);
+			fos_key.write(key.getEncoded());*/
+			// -----------------------------------------------------
+			
 			 //creating file input stream to read contents for encryption
-			try(FileInputStream fis = new FileInputStream(fileName)){
+			try (FileInputStream fis = new FileInputStream(fileName)) {
 				//creating cipher output stream to write encrypted contents
-			    try(CipherOutputStream cos = new CipherOutputStream(fos, aesCipher)){
+			    try (CipherOutputStream cos = new CipherOutputStream(fos, aesCipher)) {
 			    	int read;
 			    	byte buf[] = new byte[4096];
 			    	while((read = fis.read(buf)) != -1)  //reading from file
 			    		cos.write(buf, 0, read);  //encrypting and writing to file
 			    }
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
+		return key;
 	}
 	
-	private void decryptWithAES(String fileName) throws Exception {
-		SecretKey key = null;
+	private void decryptWithAES(String fileName, String keyPath) throws Exception {
+		byte[] keybyte = new byte[32];
+		@SuppressWarnings("resource")
+		FileInputStream fin = new FileInputStream(keyPath);
+		fin.read(keybyte);
+		SecretKey key = new SecretKeySpec(keybyte, 0, 32, "AES");
 		
 	  //creating file input stream to read from file
 		try(FileInputStream fis = new FileInputStream(fileName)) {
 		   //creating object input stream to read objects from file
-		   ObjectInputStream ois = new ObjectInputStream(fis);
-		   key = (SecretKey)ois.readObject();  //reading key used for encryption
+		   //ObjectInputStream ois = new ObjectInputStream(fis);
+		   //key = (SecretKey)ois.readObject();  //reading key used for encryption
 		   
 		   Cipher aesCipher = Cipher.getInstance("AES");  //getting cipher for AES
 		   aesCipher.init(Cipher.DECRYPT_MODE, key);  //initializing cipher for decryption 
@@ -238,4 +258,16 @@ public class ClientServiceImpl implements ClientService {
 	private void encryptWithRSA(String filePath) {
 		// TODO
 	}
+	
+	@SuppressWarnings("unused")
+	private String generateKeyName(String fileName) {
+		
+		String finalName = "";
+		String[] chunks = fileName.split(".");
+		for (String chunk : chunks) {
+			finalName += chunk;
+		}
+		return finalName + "AESKey.txt";
+	}
+	
 }

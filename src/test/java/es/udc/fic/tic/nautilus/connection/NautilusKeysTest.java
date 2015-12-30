@@ -10,8 +10,6 @@ import java.util.List;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import net.tomp2p.peers.Number160;
-
 import org.junit.AfterClass;
 import org.junit.Test;
 
@@ -32,11 +30,12 @@ public class NautilusKeysTest {
 		keyGen.init(256);
 		
 		String fileName = "hola_mundo.txt";
-		Number160 host = Number160.createHash("p1");
-		Number160 hostBackup = Number160.createHash("p2");
+		String hash = "dlkfsdjlfkjsdlfkjiowejpemfwcm23n42fjskvdfdsf";
+		String host = "192.168.1.76";
+		String hostBackup = "192.168.1.54";
 		SecretKey key = keyGen.generateKey();
 		
-		NautilusKey nkey = new NautilusKey(fileName, key, host, hostBackup);
+		NautilusKey nkey = new NautilusKey(fileName, key, hash, host, hostBackup);
 		lkeys.add(nkey);
 		
 		handler.generateKeys(lkeys);
@@ -48,6 +47,7 @@ public class NautilusKeysTest {
 		NautilusKey recoveryKey = listRecovery.get(0);
 		
 		assertEquals(recoveryKey.getKey(), nkey.getKey());
+		assertEquals(recoveryKey.getHash(), nkey.getHash());
 		assertEquals(recoveryKey.getHost(), nkey.getHost());
 		assertEquals(recoveryKey.getHostBackup(), nkey.getHostBackup());
 		assertEquals(recoveryKey.getFileName(), nkey.getFileName());

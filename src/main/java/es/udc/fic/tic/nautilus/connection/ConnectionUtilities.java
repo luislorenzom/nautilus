@@ -1,6 +1,7 @@
 package es.udc.fic.tic.nautilus.connection;
 
 import java.util.Calendar;
+import java.util.List;
 
 public interface ConnectionUtilities {
 	
@@ -22,18 +23,25 @@ public interface ConnectionUtilities {
 	public int processMessageTypeOne(NautilusMessage msg);
 	
 	/**
-	 * This function makes a type zero message
+	 * This function get the parameter of 
 	 * 
 	 * @param the file hash
 	 * @return The message
 	 */
-	public NautilusMessage packagingMessageTypeZero(String hash);
+	public List<NautilusMessage> getMessagesFromKey(String keyPath);
 	
 	/**
-	 * This function makes a type one message
+	 * This function split and encrypt the file, meanwhile save the keys from files
 	 * 
-	 * @return The message
+	 * @return A list of messages
 	 */
-	public NautilusMessage packagingMessageTypeOne(String filePath, int downloadLimit,
-			Calendar dateLimit, Calendar releaseDate);
+	public List<NautilusMessage> prepareFileToSend(String filePath, int downloadLimit,
+			Calendar dateLimit, Calendar dateRelease);
+	
+	/**
+	 * This function get the host and the backup from our config
+	 * 
+	 * @return List with the two host for save the file
+	 */
+	public List<String> getHostAndBackupFromConfig();
 }

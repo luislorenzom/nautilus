@@ -3,11 +3,9 @@ package es.udc.fic.tic.nautilus.client;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
+import javax.crypto.SecretKey;
 
 import es.udc.fic.tic.nautilus.util.Metadata;
 import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
@@ -39,9 +37,7 @@ public interface ClientService {
 	 * @return the file encrypted
 	 * @throws Exception 
 	 */
-	public File encryptFile(String filePath, ENCRYPT_ALG algorithm) 
-			throws IOException, DataLengthException, NoSuchAlgorithmException, 
-			IllegalStateException, InvalidCipherTextException, Exception; 
+	public SecretKey encryptFile(String filePath, ENCRYPT_ALG algorithm) throws Exception; 
 	
 	/**
 	 * Decrypt the files
@@ -61,19 +57,4 @@ public interface ClientService {
 	 * @return XML file with the metadata
 	 */
 	public File generateMetadata(Metadata metadata);
-	
-	/**
-	 * Distributed the file in the p2p network
-	 * 
-	 * @param files want to distributed
-	 */
-	public void sendFile(List<File> files);	
-	
-	/**
-	 * recovery the list files to make the final file
-	 * 
-	 * @param the file with the nodeList where are the files
-	 * @return the listFiles
-	 */
-	public List<File> recoveryFiles(File nodeList);
 }

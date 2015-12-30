@@ -98,6 +98,13 @@ public class ServerImpl implements Server {
 	/* Private functions */
 	/*********************/
 	
+	/**
+	 * This function convert the byte[] received into a object
+	 * 
+	 * @param byte[] the message bytes
+	 * @return NautilusMessage the message object
+	 * @throws Exception
+	 */
 	private NautilusMessage byteArrayToObject(byte[] bytes) throws Exception {
 		ByteArrayInputStream bs= new ByteArrayInputStream(bytes);
 		ObjectInputStream is = new ObjectInputStream(bs);

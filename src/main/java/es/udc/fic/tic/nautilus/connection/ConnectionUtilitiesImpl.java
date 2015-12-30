@@ -6,7 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
+
+import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +21,7 @@ import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.expcetion.HashGenerationException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.server.ServerService;
+import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
 
 @Service("connectionUtilities")
 public class ConnectionUtilitiesImpl implements ConnectionUtilities {
@@ -25,8 +31,9 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	
 	@Autowired
 	private ClientService clientService;
-
+	
 	ConfigHandler configHandler = new ConfigHandler();
+	NautilusKeysHandler keysHandler = new NautilusKeysHandler();
 	
 	@Override
 	public byte[] processMessageTypeZero(NautilusMessage msg) {
@@ -74,36 +81,90 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	}
 
 	@Override
-	public NautilusMessage packagingMessageTypeZero(String hash) {
-		// TODO comprobar que el hash no es nulo y marchearlo con 
-		// una expresion regular del SHA-256
+	public List<NautilusMessage> getMessagesFromKey(String hash) {
 		return null;
 	}
 
 	@Override
-	public NautilusMessage packagingMessageTypeOne(String filePath,
+	public List<NautilusMessage> prepareFileToSend(String filePath,
 			int downloadLimit, Calendar dateLimit, Calendar releaseDate) {
-		// TODO haciendo uso del servicio del cliente encriptar el fichero y comprobar
-		// los campos para crear el mensaje y devolverlo
-		return null;
+		List<NautilusMessage> msgs = new ArrayList<NautilusMessage>();
+		try {
+			/* Split the file */
+			 clientService.fileSplit(filePath);
+			 List<File> splitFiles = new ArrayList<File>();
+			 File[] files = new File(getFolderFromPath(filePath)).listFiles();
+			 /* Get the file's chunks */
+			 for (File fileEntry : files) {
+				 if (fileEntry.getName().contains(getNameAboutPath(filePath)) && 
+					(fileEntry.getName()).substring(fileEntry.getName().length() - 1).matches("[0-9]+")) {
+					 splitFiles.add(fileEntry);
+				 }
+			 }
+			 
+			 /* Preparamos una lista para despues convertir a la llave xml */
+			 List<NautilusKey> keysList = new ArrayList<NautilusKey>();
+			 
+			 /* Now encrypt the files and generate a key */
+			 for (File fileEntry : splitFiles) {
+				 
+				 // Encrypt
+				 SecretKey key = clientService.encryptFile(fileEntry.getPath(), ENCRYPT_ALG.AES);
+				 
+				 String EncryptfileName = fileEntry.getName()+".aes256";
+				 
+				 // Delete the plain file
+				 fileEntry.delete();
+				 
+				 File encryptFile = new File(fileEntry.getName()+".aes256");
+				 
+				 // Generate the file hash
+				 String hash = getHashFromFile(new File(encryptFile.getPath()), "SHA-256");
+				 
+				 // We generate a key and adding to list, after when send the file will save the host
+				 NautilusKey nKey = new NautilusKey(EncryptfileName, key, hash, null, null);
+				 keysList.add(nKey);
+				 
+				 // Generate a message
+				 NautilusMessage msg = new NautilusMessage(1, hash, readContentIntoByteArray(encryptFile), 
+						 downloadLimit, dateLimit, releaseDate);
+				 
+				 // Add the new message to the messageList
+				 msgs.add(msg);
+			 }
+			 
+			 // Write the key into xml
+			 keysHandler.generateKeys(keysList);
+			 			 
+		} catch (Exception e) {
+			return null;
+		}
+		return msgs;
 	}
 	
-	/* TODO hacer una funcion que a partir de un fichero haga un split de este e invoque
-	 a la funcion de empaquetar el mensaje de tipo uno por cada split que haga el fichero
-	 en un bucle */
 	
+	public List<String> getHostAndBackupFromConfig() {
+		List<String> preferences = configHandler.getConfig().getServerPreferences();
+		List<String> hostAndBackup = new ArrayList<String>();
+		Random randomizer = new Random();
+		for (int i = 0; i < 2; i++) {
+			hostAndBackup.add(preferences.get(randomizer.nextInt(preferences.size())));
+		}
+		return hostAndBackup;
+	}
 	
+	/*********************/
 	/* private functions */
+	/*********************/
 	
 	/**
 	 * Function to obtain the hash of the file
 	 * 
 	 * @param File file
 	 * @param String algorithm
-	 * @return The hash string from the file
+	 * @return String The hash string from the file
 	 * @throws HashGenerationException
 	 */
-	@SuppressWarnings("unused")
 	private String getHashFromFile(File file, String algorithm) throws HashGenerationException {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			// algorithm can be "MD5", "SHA-1", "SHA-256"
@@ -129,7 +190,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	 * Function to convert byte array to hexadecimal string
 	 * 
 	 * @param Byte array which want to convert
-	 * @return The string from byte array
+	 * @return String The string from byte array
 	 */
 	private static String convertByteArrayToHexString(byte[] arrayBytes) {
 	    StringBuffer stringBuffer = new StringBuffer();
@@ -159,6 +220,9 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	
 	/**
 	 * This function calculate the size of directory
+	 * 
+	 * @param File the directory
+	 * @return long the all files length
 	 */
 	private long folderSize(File directory) {
 	    long length = 0;
@@ -171,7 +235,12 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	    return length;
 	}
 	
-	/* this function get the byteArray from a file */
+	/**
+	 * This function get the byteArray from a file
+	 * 
+	 * @param File file
+	 * @return byte[] from file
+	 */
 	private byte[] readContentIntoByteArray(File file) {
 	      FileInputStream fileInputStream = null;
 	      byte[] bFile = new byte[(int) file.length()];
@@ -187,10 +256,48 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	      return bFile;
 	}
 	
-	/* TODO hacer un funcion que en base a la lista de preferencias de servidor buscar 2
-	 * uno para subir el fichero y el otro a modo de mirror */
+	/**
+	 * Get the file name from the path
+	 * 
+	 * @param String path file
+	 * @return String name of the file
+	 */
+	private String getNameAboutPath(String path) {
+		String[] tmp = path.split("/");
+		return tmp[tmp.length - 1];
+	}
 	
-	/* TODO hacer un funcion para generar el archivo key, que contenga las claves de los
-	 * archivos y los peers donde se encuentran estos archivos, por ahora hacerlo como 
-	 * una clase serializada que sea un lista de tuplas (Server,frase de paso) */
+	/**
+	 * Get the file path from the file path
+	 * 
+	 * @param String File path
+	 * @return String the folder path
+	 */
+	private String getFolderFromPath(String path) {
+		String[] tmp = path.split("/");
+		if (tmp.length == 1) {
+			return ".";
+		}	
+		String FolderPath = "";
+		for (int i = 0; i < tmp.length - 1; i++) {
+			FolderPath += tmp[i];
+		}
+		return FolderPath;
+	}
+	
+	/**
+	 * Get the extesion from the file name
+	 * 
+	 * @param String fileName
+	 * @return String extension
+	 */
+	@SuppressWarnings("unused")
+	private String getExtensionFromFileName(String fileName) {
+		String[] chunks = fileName.split(".");
+		String extension = "";
+		for (String chunk : chunks) {
+			extension = chunk;
+		}
+		return extension;
+	}
 }

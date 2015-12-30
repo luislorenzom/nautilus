@@ -68,7 +68,7 @@
 		<version>1.52</version>
 	</dependency>
 	
-	<!-- JavaFX webview interface 
+	<!-- JavaFX webview interface
     <dependency>
         <groupId>javafx</groupId>
         <artifactId>javafx</artifactId>
@@ -76,13 +76,6 @@
         <scope>system</scope>
         <systemPath>${java.home}/lib/jfxrt.jar</systemPath>
     </dependency> -->
-    
-    <!-- Fuse get info of system -->
-    <dependency>
-		<groupId>org.fusesource</groupId>
-		<artifactId>sigar</artifactId>
-		<version>1.6.4</version>
-	</dependency>
 	
 	<!-- CGLIB (required by Spring) -->
 	<dependency>

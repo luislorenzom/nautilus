@@ -73,7 +73,7 @@ public class ClientServiceTest {
 		int numberOfFilesAfter = this.CountDirFiles(dir);
 		
 		// calculate the difference
-		int difference = (int) Math.ceil((float) (file.length() / 1024f));
+		int difference = (int) Math.ceil((float) (file.length() / generateChunkSize(file.length()) + 1 ));
 		
 		assertEquals(numberOfFilesAfter, numberOfFilesBefore+difference);
 		
@@ -101,9 +101,12 @@ public class ClientServiceTest {
 		clientService.encryptFile("photo.png", ENCRYPT_ALG.AES);
 		File file = new File("photo.png.aes");
 		assertNotNull(file);
+		assertNotNull(new File(generateKeyName("photo.png")));
 		
 		clientService.decrypt("key.txt", "photo.png.aes", ENCRYPT_ALG.AES);
-		
+		File decodeFile = new File("dec_photo.png");
+		assertNotNull(decodeFile);
+		assertEquals(file.length(), decodeFile.length());
 	}
 	
 	
@@ -149,5 +152,34 @@ public class ClientServiceTest {
 		}
 	}
 	
-
+	private long generateChunkSize(long fileSize) {
+		
+		/* less than 50mb implies split in three parts */
+		if (fileSize <= 52428800) {
+			return (fileSize / 2) - 100;
+		}
+		
+		/* less than 250mb implies split in five parts */
+		if (fileSize <= 262144000) {
+			return (fileSize / 4) - 100;
+		}
+		
+		/* less than 1gb implies split in nine parts */
+		if (fileSize <= 1073741824) {
+			return (fileSize / 8) - 100;
+		}
+		
+		/* Default */
+		return (fileSize / 16) - 100;
+	}
+	
+	private String generateKeyName(String fileName) {
+		
+		String finalName = "";
+		String[] chunks = fileName.split(".");
+		for (String chunk : chunks) {
+			finalName += chunk;
+		}
+		return finalName + "AESKey.txt";
+	}
 }

@@ -9,8 +9,6 @@ import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import net.tomp2p.peers.Number160;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -50,14 +48,13 @@ public class NautilusKeysHandler {
 					
 					String fileName = keyElement.getChildText("fileName");
 					String aesKeyText = keyElement.getChildText("AESKey");
-					String hostText = keyElement.getChildText("host");
-					String hostBackupText = keyElement.getChildText("hostBackup");
-					
-					Number160 host = new Number160(hostText);
-					Number160 hostBackup = new Number160(hostBackupText);
+					String hash = keyElement.getChildText("hash");
+					String host = keyElement.getChildText("host");
+					String hostBackup = keyElement.getChildText("hostBackup");
+
 					SecretKey key = stringToSecretKey(aesKeyText);
 					
-					NautilusKey nkey = new NautilusKey(fileName, key, host, hostBackup);
+					NautilusKey nkey = new NautilusKey(fileName, key, hash, host, hostBackup);
 					
 					keysList.add(nkey);
 				}
@@ -96,12 +93,16 @@ public class NautilusKeysHandler {
 						key.addContent(new Element("AESKey").setText(secretKeyToString(keyItem.getKey())));
 					}
 					
+					if (keyItem.getHash() != null) {
+						key.addContent(new Element("hash").setText(keyItem.getHash()));
+					}
+					
 					if (keyItem.getHost() != null) {
-						key.addContent(new Element("host").setText(keyItem.getHost().toString()));
+						key.addContent(new Element("host").setText(keyItem.getHost()));
 					}
 					
 					if (keyItem.getHostBackup() != null) {
-						key.addContent(new Element("hostBackup").setText(keyItem.getHostBackup().toString()));
+						key.addContent(new Element("hostBackup").setText(keyItem.getHostBackup()));
 					}
 					keys.addContent(key);
 				}

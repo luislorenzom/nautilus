@@ -2,20 +2,20 @@ package es.udc.fic.tic.nautilus.connection;
 
 import javax.crypto.SecretKey;
 
-import net.tomp2p.peers.Number160;
-
 public class NautilusKey {
 	
 	private String fileName;
 	private SecretKey key;
-	private Number160 host;
-	private Number160 hostBackup;
+	private String hash;
+	private String host;
+	private String hostBackup;
 	
-	public NautilusKey(String fileName, SecretKey key, Number160 host,
-			Number160 hostBackup) {
+	public NautilusKey(String fileName, SecretKey key, String hash,
+			String host, String hostBackup) {
 		super();
 		this.fileName = fileName;
 		this.key = key;
+		this.setHash(hash);
 		this.host = host;
 		this.hostBackup = hostBackup;
 	}
@@ -36,19 +36,27 @@ public class NautilusKey {
 		this.key = key;
 	}
 
-	public Number160 getHost() {
+	public String getHost() {
 		return host;
 	}
+	
+	public String getHash() {
+		return hash;
+	}
 
-	public void setHost(Number160 host) {
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
+
+	public void setHost(String host) {
 		this.host = host;
 	}
 
-	public Number160 getHostBackup() {
+	public String getHostBackup() {
 		return hostBackup;
 	}
 
-	public void setHostBackup(Number160 hostBackup) {
+	public void setHostBackup(String hostBackup) {
 		this.hostBackup = hostBackup;
 	}
 }

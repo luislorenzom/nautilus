@@ -14,6 +14,7 @@ import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,7 +41,7 @@ public class ConnectionUtilitiesTest {
 	@Autowired
 	private ServerService serverService;
 	
-	@BeforeClass
+	//@BeforeClass
 	public static void initializeStorageFolderAndGenerateConfigFile() throws Exception {
 		/* Initialize the storage folder and one file */
 		File folder = new File(System.getProperty("user.home")+"/nautilus_storage");
@@ -58,7 +59,7 @@ public class ConnectionUtilitiesTest {
 		configHandler.changeConfig(config);
 	}
 	
-	@AfterClass
+	//@AfterClass
 	public static void deteleStorageFolderAndConfigFile() {
 		/* Delete storage folder */
 		File storageFile = new File(System.getProperty("user.home")+"/nautilus_storage");
@@ -73,7 +74,7 @@ public class ConnectionUtilitiesTest {
 	}
 	
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeOneUnderLimitTest() throws Exception {
 		/* save the file */
 		String uri = "ftp://ftp.rediris.es/mirror/Apache/aurora/0.10.0/apache-aurora-0.10.0.tar.gz";
@@ -87,7 +88,7 @@ public class ConnectionUtilitiesTest {
 		assertEquals(result, 1);
 	}
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeOneOverLimitTest() throws Exception {
 		String uri = "ftp://ftp.rediris.es/mirror/Apache/aurora/0.9.0/apache-aurora-0.9.0.tar.gz";
 		downloadFileByUrl(uri, new File("."));
@@ -100,7 +101,7 @@ public class ConnectionUtilitiesTest {
 		assertEquals(result, -1);
 	}
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeOneWithoutPermissionTest() throws Exception {
 		/* Change the config.xml */
 		ConfigHandler configHandler = new ConfigHandler();
@@ -119,7 +120,7 @@ public class ConnectionUtilitiesTest {
 		assertEquals(result, -1);
 	}
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeZeroSuccessTest() throws Exception {
 		/* save the file 0 in the system */
 		File file= new File(System.getProperty("user.home") + 
@@ -132,7 +133,7 @@ public class ConnectionUtilitiesTest {
 		assertEquals(result.length, file.length());
 	}
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeZeroNotFoundTest() throws Exception {
 		NautilusMessage msg = new NautilusMessage(0, "file_not_saved");
 		byte[] result = connectionUtilities.processMessageTypeZero(msg);
@@ -140,7 +141,7 @@ public class ConnectionUtilitiesTest {
 		assertNull(result);
 	}
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeZeroNotReleasedTest() throws Exception {
 		/* save the file 0 in the system */
 		
@@ -158,7 +159,7 @@ public class ConnectionUtilitiesTest {
 		assertNull(result);
 	}
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeZeroCameLateTest() throws Exception {
 		/* save the file 0 in the system */
 		
@@ -176,7 +177,7 @@ public class ConnectionUtilitiesTest {
 		assertNull(result);
 	}
 	
-	@Test
+	//@Test
 	public void procesingMessageTypeZeroLimitDownloadTest() throws Exception {
 		/* save the file 0 in the system */
 		File file= new File(System.getProperty("user.home") + 
@@ -191,6 +192,16 @@ public class ConnectionUtilitiesTest {
 		byte[] result2 = connectionUtilities.processMessageTypeZero(msg);
 		
 		assertNull(result2);
+	}
+	
+	
+	@Test
+	public void packagingMessageTypeOneSuccess() {
+		List<NautilusMessage> packs = connectionUtilities.prepareFileToSend("apache-aurora-0.8.0.tar.gz", 
+				0, null, null);
+		
+		System.out.println("hola mundo");
+		
 	}
 	
 	

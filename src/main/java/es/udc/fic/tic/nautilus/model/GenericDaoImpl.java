@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GenericDaoImpl<E, PK extends Serializable> implements
 GenericDao<E, PK> {
-
+	
 	private SessionFactory sessionFactory;
 
 	private Class<E> entityClass;
