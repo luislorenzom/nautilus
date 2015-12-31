@@ -1,5 +1,6 @@
 package es.udc.fic.tic.nautilus.connection;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.List;
 
@@ -44,4 +45,14 @@ public interface ConnectionUtilities {
 	 * @return List with the two host for save the file
 	 */
 	public List<String> getHostAndBackupFromConfig();
+	
+	/**
+	 * This files receive one list of encrypt files and 
+	 * restore the original file
+	 * 
+	 * @param List<File> files
+	 * @param List<NautilusKey> key
+	 * @throws Exception 
+	 */
+	public void restoreFile(List<File> files, List<NautilusKey> key) throws Exception;
 }

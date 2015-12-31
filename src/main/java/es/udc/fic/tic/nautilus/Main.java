@@ -38,7 +38,8 @@ public class Main {
 		 * comprobar el espacio donado disponible contra la base de datos*/
 		try {
 			//server.startServer();
-			client.saveFileInNetwork("apache-aurora-0.8.0.tar.gz", 0, null, null);
+			//client.saveFileInNetwork("apache-aurora-0.8.0.tar.gz", 0, null, null);
+			client.getFileFromKey("key.xml");
 		} catch (Exception e) {
 			//System.err.println("Error!");
 			e.printStackTrace();

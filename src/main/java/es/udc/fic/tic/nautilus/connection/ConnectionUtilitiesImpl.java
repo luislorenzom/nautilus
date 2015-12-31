@@ -21,6 +21,7 @@ import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.expcetion.HashGenerationException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.server.ServerService;
+import es.udc.fic.tic.nautilus.util.ModelConstanst;
 import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
 
 @Service("connectionUtilities")
@@ -151,6 +152,50 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			hostAndBackup.add(preferences.get(randomizer.nextInt(preferences.size())));
 		}
 		return hostAndBackup;
+	}
+	
+	
+	@Override
+	public void restoreFile(List<File> files, List<NautilusKey> keys) throws Exception {
+		int index = 0;
+		List<File> deleteFiles = new ArrayList<File>();
+		// Decrypt
+		for (File file : files) {
+			clientService.decrypt(keys.get(index).getKey(), file.getPath(), ModelConstanst.ENCRYPT_ALG.AES);
+			index++;
+			
+			// delete encrypt file
+			file.delete();
+			
+			int lenghtDeleteFiles = file.getName().length() - 7;
+			deleteFiles.add(new File("dec_"+file.getName().substring(0, lenghtDeleteFiles)));
+		}
+		
+		// Get the baseName for make the join operation
+		//TODO: revisar esto con un archivo "loquesea.pdf.0"
+		String[] baseNameArray = keys.get(0).getFileName().split("\\.");
+		String baseName = "";
+		index = 0;
+		for (String baseNameFrag : baseNameArray) {
+			if (index == (baseNameArray.length - 2)) {
+				break;
+			}
+			
+			if (index == (baseNameArray.length - 3)) {
+				baseName += baseNameFrag;
+			} else {
+				baseName += baseNameFrag + ".";
+			}
+			
+			index++;
+		}
+		
+		// Join
+		clientService.fileJoin("dec_"+baseName);
+		
+		for (File fileToDelete : deleteFiles) {
+			fileToDelete.delete();
+		}
 	}
 	
 	/*********************/

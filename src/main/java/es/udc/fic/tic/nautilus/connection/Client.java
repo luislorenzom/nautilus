@@ -18,6 +18,7 @@ public interface Client {
 	 * this function recovery the file from the key file
 	 * 
 	 * @param String keyPath
+	 * @throws Exception 
 	 */
-	public void getFileFromKey(String keyPath);
+	public void getFileFromKey(String keyPath) throws Exception;
 }

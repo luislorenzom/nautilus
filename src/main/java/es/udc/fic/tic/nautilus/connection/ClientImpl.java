@@ -3,9 +3,11 @@ package es.udc.fic.tic.nautilus.connection;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
@@ -67,9 +69,43 @@ public class ClientImpl implements Client {
 	}
 
 	@Override
-	public void getFileFromKey(String keyPath) {
-		// TODO Auto-generated method stub
+	public void getFileFromKey(String keyPath) throws Exception {
 		
+		List<NautilusKey> keys = keysHandler.getKeys(keyPath);
+		List<File> filesJoin = new ArrayList<File>();
+		
+		for (NautilusKey key : keys) {
+			NautilusMessage msg = new NautilusMessage(0, key.getHash());
+			int result = startClient(key.getHost(), msg);
+			
+			if (result == 1) {
+				File file = new File(key.getHash()+".aes256");
+				File newFile = new File(key.getFileName());
+				file.renameTo(newFile);
+				
+				file.delete();
+				filesJoin.add(newFile);
+			} else {
+				// Make the petition to the backup host
+				if (key.getHostBackup() != null) {
+					int secondResult = startClient(key.getHostBackup(), msg);
+					
+					if (secondResult == 1) {
+						File file = new File(key.getHash()+".aes256");
+						File newFile = new File(key.getFileName());
+						file.renameTo(newFile);
+						
+						file.delete();
+						filesJoin.add(newFile);
+					} else {
+						System.out.println("Can't recovery the file");
+						System.exit(0);
+					}
+				}
+			}
+		}
+		// Decrypt and join the file's part
+		connectionUtilities.restoreFile(filesJoin, keys);
 	}
 	
 	/**********************/
@@ -77,6 +113,8 @@ public class ClientImpl implements Client {
 	/*********************/
 	
 	private int startClient(String ipAddress, NautilusMessage msgObject) throws Exception {
+		/* TODO: añadir un try catch para evitar que salgan las 
+		 * excepciones de TCP conexion reiniciada? */
 		Random rnd = new Random(42L);
 		Bindings b = new Bindings().listenAny();
 		Peer client = new PeerBuilder(new Number160(rnd)).ports(4001).bindings(b).start();
@@ -109,33 +147,63 @@ public class ClientImpl implements Client {
 		PeerAddress peerA = addressList.iterator().next();
 		
 		byte[] msg = objectToByteArray(msgObject);
-		FutureDirect future = client.sendDirect(peerA).object(msg).start();
 		
-		future.awaitUninterruptibly();
 		
-		if (future.isSuccess()) {
-			System.out.println("=====> receiving message");
-			int val = (int) future.object();
-			if (val == 1) {
-				// Success!!
-				System.out.println("=====> File part correctly sent");
-				client.shutdown();
-				return val;
-			} else {
-				// Fail in the server (can't save for space, permits, doesn't find, etc)
-				System.out.println("=====> has been some error in the server");
-				client.shutdown();
-				return val;
-			}
-			// When received an byte array
-			/*byte[] byteArray = (byte[]) future.object();
-			FileOutputStream fos = new FileOutputStream("filerecovered.png");
-			fos.write(byteArray);
-			fos.close();*/
+		if (msgObject.getType() == 1) {
+			// Send and logic to process msg type one
+			FutureDirect future = client.sendDirect(peerA).object(msg).start();
 			
-		} else {
-			System.out.println(future.failedReason());
+			future.awaitUninterruptibly();
+			
+			if (future.isSuccess()) {
+				
+				System.out.println("=====> receiving message");
+				int val = (int) future.object();
+				if (val == 1) {
+					// Success!!
+					System.out.println("=====> File part correctly sent");
+					client.shutdown();
+					return val;
+				} else {
+					// Fail in the server (can't save for space, permits, doesn't find, etc)
+					System.out.println("=====> has been some error in the server");
+					client.shutdown();
+					return val;
+				}
+				
+			} else {
+				System.out.println(future.failedReason());
+			}
 		}
+		
+		if (msgObject.getType() == 0) {
+			// Send and logic to process msg type zero
+			FutureDirect future = client.sendDirect(peerA).object(msg).start();
+			
+			future.awaitUninterruptibly();
+			
+			if (future.isSuccess()) {
+				System.out.println("=====> receiving message");
+				try{
+					byte[] byteArray = (byte[]) future.object();
+					FileOutputStream fos = new FileOutputStream(msgObject.getHash()+".aes256");
+					fos.write(byteArray);
+					fos.close();
+					
+					System.out.println("=====> File part recovered");
+					client.shutdown();
+					return 1;
+				} catch (Exception e) {
+					System.out.println("=====> has been some error in the server");
+					client.shutdown();
+					return -1;
+				}
+				
+			} else {
+				System.out.println(future.failedReason());
+			}
+		}
+		
 		client.shutdown();
 		return -1;
 	}
@@ -147,6 +215,7 @@ public class ClientImpl implements Client {
 	 * @param File the file object which we want convert into byte array
 	 * @return byte[] from the file
 	 */
+	@SuppressWarnings("unused")
 	private static byte[] readContentIntoByteArray(File file) {
 	      FileInputStream fileInputStream = null;
 	      byte[] bFile = new byte[(int) file.length()];

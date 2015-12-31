@@ -15,7 +15,6 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.stereotype.Service;
 
@@ -106,7 +105,7 @@ public class ClientServiceImpl implements ClientService {
 		return null;
 	}
 
-	public List<File> decrypt(String keyPath, String filePath, ENCRYPT_ALG algorithm) 
+	public List<File> decrypt(SecretKey key, String filePath, ENCRYPT_ALG algorithm) 
 			throws Exception {
 		
 		switch (algorithm) {
@@ -116,7 +115,7 @@ public class ClientServiceImpl implements ClientService {
 
 		case AES:
 			// Decrypt
-			this.decryptWithAES(filePath, keyPath);
+			this.decryptWithAES(filePath, key);
 			break;
 		}
 		return null;
@@ -222,12 +221,12 @@ public class ClientServiceImpl implements ClientService {
 		return key;
 	}
 	
-	private void decryptWithAES(String fileName, String keyPath) throws Exception {
-		byte[] keybyte = new byte[32];
+	private void decryptWithAES(String fileName, SecretKey key) throws Exception {
+		/*byte[] keybyte = new byte[32];
 		@SuppressWarnings("resource")
 		FileInputStream fin = new FileInputStream(keyPath);
 		fin.read(keybyte);
-		SecretKey key = new SecretKeySpec(keybyte, 0, 32, "AES");
+		SecretKey key = new SecretKeySpec(keybyte, 0, 32, "AES");*/
 		
 	  //creating file input stream to read from file
 		try(FileInputStream fis = new FileInputStream(fileName)) {
@@ -240,7 +239,7 @@ public class ClientServiceImpl implements ClientService {
 		   //with key creating file output stream to write back original contents
 		   
 		   try(FileOutputStream fos = new FileOutputStream("dec_"+fileName.substring(0
-				   , fileName.length()-4))) {
+				   , fileName.length()-7))) {
 			   //creating cipher input stream to read encrypted contents
 			   try(CipherInputStream cis = new CipherInputStream(fis, aesCipher)) {
 				   int read;

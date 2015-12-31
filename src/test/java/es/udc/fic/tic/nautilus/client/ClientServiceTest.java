@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import javax.crypto.SecretKey;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -98,15 +100,15 @@ public class ClientServiceTest {
 	@Test
 	public void encryAndDecrypttWithAesTest() throws Exception {
 		
-		clientService.encryptFile("photo.png", ENCRYPT_ALG.AES);
-		File file = new File("photo.png.aes");
+		SecretKey key = clientService.encryptFile("photo.png", ENCRYPT_ALG.AES);
+		File file = new File("photo.png.aes256");
 		assertNotNull(file);
 		assertNotNull(new File(generateKeyName("photo.png")));
 		
-		clientService.decrypt("key.txt", "photo.png.aes", ENCRYPT_ALG.AES);
+		clientService.decrypt(key, "photo.png.aes256", ENCRYPT_ALG.AES);
 		File decodeFile = new File("dec_photo.png");
 		assertNotNull(decodeFile);
-		assertEquals(file.length(), decodeFile.length());
+ 		assertEquals(new File("photo.png").length(), decodeFile.length());
 	}
 	
 	

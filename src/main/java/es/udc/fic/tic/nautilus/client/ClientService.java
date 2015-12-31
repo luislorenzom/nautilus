@@ -47,7 +47,7 @@ public interface ClientService {
 	 * @return the files decrypted
 	 * @throws Exception 
 	 */
-	public List<File> decrypt(String key, String filePath, ENCRYPT_ALG algorithm) 
+	public List<File> decrypt(SecretKey key, String filePath, ENCRYPT_ALG algorithm) 
 			throws Exception;
 	
 	/**
