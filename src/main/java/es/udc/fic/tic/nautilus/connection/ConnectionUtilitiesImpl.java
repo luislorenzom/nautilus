@@ -91,14 +91,21 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			int downloadLimit, Calendar dateLimit, Calendar releaseDate) {
 		List<NautilusMessage> msgs = new ArrayList<NautilusMessage>();
 		try {
+			String pathForList = ".";
 			/* Split the file */
 			 clientService.fileSplit(filePath);
 			 List<File> splitFiles = new ArrayList<File>();
-			 File[] files = new File(getFolderFromPath(filePath)).listFiles();
+
+			 if (new File(filePath).getParent() != null) {
+				 pathForList = new File(filePath).getParent();
+			 }
+			 
+			File[] files = new File(pathForList).listFiles();
 			 /* Get the file's chunks */
 			 for (File fileEntry : files) {
-				 if (fileEntry.getName().contains(getNameAboutPath(filePath)) && 
-					(fileEntry.getName()).substring(fileEntry.getName().length() - 1).matches("[0-9]+")) {
+				 if (fileEntry.getName().contains(getNameAboutPath(filePath)) &&
+					(fileEntry.getName()).substring(fileEntry.getName().length() - 1).matches("[0-9]+") &&
+					! fileEntry.getPath().equals(filePath)) {
 					 splitFiles.add(fileEntry);
 				 }
 			 }
@@ -117,10 +124,9 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				 // Delete the plain file
 				 fileEntry.delete();
 				 
-				 File encryptFile = new File(fileEntry.getName()+".aes256");
-				 
+				 File encryptFile = new File(fileEntry.getPath()+".aes256");
 				 // Generate the file hash
-				 String hash = getHashFromFile(new File(encryptFile.getPath()), "SHA-256");
+				 String hash = getHashFromFile(encryptFile, "SHA-256");
 				 
 				 // We generate a key and adding to list, after when send the file will save the host
 				 NautilusKey nKey = new NautilusKey(EncryptfileName, key, hash, null, null);
@@ -138,7 +144,8 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			 keysHandler.generateKeys(keysList);
 			 			 
 		} catch (Exception e) {
-			return null;
+			//return null;
+			e.printStackTrace();
 		}
 		return msgs;
 	}
@@ -316,24 +323,6 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	private String getNameAboutPath(String path) {
 		String[] tmp = path.split("/");
 		return tmp[tmp.length - 1];
-	}
-	
-	/**
-	 * Get the file path from the file path
-	 * 
-	 * @param String File path
-	 * @return String the folder path
-	 */
-	private String getFolderFromPath(String path) {
-		String[] tmp = path.split("/");
-		if (tmp.length == 1) {
-			return ".";
-		}	
-		String FolderPath = "";
-		for (int i = 0; i < tmp.length - 1; i++) {
-			FolderPath += tmp[i];
-		}
-		return FolderPath;
 	}
 	
 	/**

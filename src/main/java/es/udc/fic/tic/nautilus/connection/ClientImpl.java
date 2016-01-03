@@ -42,6 +42,7 @@ public class ClientImpl implements Client {
 	public void saveFileInNetwork(String filePath, int downloadLimit,
 			Calendar dateLimit, Calendar dateRelease) throws Exception {
 		
+		String path = new File(filePath).getParent();
 		List<NautilusMessage> msgs = connectionUtilities.prepareFileToSend(filePath, 
 				downloadLimit, dateLimit, dateRelease);
 		
@@ -56,8 +57,12 @@ public class ClientImpl implements Client {
 				// Save the host in the key file
 				nautilusKey.get(index).setHost(host);
 				
-				// Delete the split file
-				new File(nautilusKey.get(index).getFileName()).delete();
+				// Delete the split file 
+				if (path != null) {
+					new File(path + "/"+ nautilusKey.get(index).getFileName()).delete();
+				} else {
+					new File(nautilusKey.get(index).getFileName()).delete();
+				}
 			} else {
 				//TODO: comprobar si se guardo bien, y si no probar con mas host de la config
 				String backup = connectionUtilities.getHostAndBackupFromConfig().get(1);	
