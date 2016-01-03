@@ -113,9 +113,13 @@ public class NautilusKeysHandler {
 			// Save the dom in xml file
 			XMLOutputter xmloutputter = new XMLOutputter();
 			
+			// Generate a name for the key
+			int finalLenght = keysList.get(0).getFileName().length() - 9;
+			String keyName = keysList.get(0).getFileName().substring(0, finalLenght);
+			
 			// Set pretty format to display nice
 			xmloutputter.setFormat(Format.getPrettyFormat());
-			xmloutputter.output(doc, new FileWriter("key.xml"));
+			xmloutputter.output(doc, new FileWriter(keyName+"_key.xml"));
 			
 		} catch (Exception e) {
 			System.err.println("Can't generate a XML key");

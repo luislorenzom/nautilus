@@ -46,7 +46,8 @@ public class ClientImpl implements Client {
 		List<NautilusMessage> msgs = connectionUtilities.prepareFileToSend(filePath, 
 				downloadLimit, dateLimit, dateRelease);
 		
-		List<NautilusKey> nautilusKey = keysHandler.getKeys("key.xml");
+		
+		List<NautilusKey> nautilusKey = keysHandler.getKeys(new File(filePath).getName()+"_key.xml");
 		int index = 0;
 		
 		for (NautilusMessage msg : msgs) {
@@ -106,6 +107,11 @@ public class ClientImpl implements Client {
 						System.out.println("Can't recovery the file");
 						System.exit(0);
 					}
+				} else {
+					//TODO: pulir los mensajes de error, indicar si es porque se acabo el limite
+					// o lo que queda para que se libere el fichero
+					System.out.println("Can't recovery the file");
+					System.exit(0);
 				}
 			}
 		}
@@ -118,8 +124,6 @@ public class ClientImpl implements Client {
 	/*********************/
 	
 	private int startClient(String ipAddress, NautilusMessage msgObject) throws Exception {
-		/* TODO: añadir un try catch para evitar que salgan las 
-		 * excepciones de TCP conexion reiniciada? */
 		Random rnd = new Random(42L);
 		Bindings b = new Bindings().listenAny();
 		Peer client = new PeerBuilder(new Number160(rnd)).ports(4001).bindings(b).start();

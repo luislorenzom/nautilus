@@ -72,12 +72,12 @@ public class Main {
 	
 	
 	private void lauchServer() throws Exception{
+		System.out.println("\n");
 		System.out.println("    _   __            __  _ __      ");
 		System.out.println("   / | / /___ ___  __/ /_(_) / _ _______   ________  ______   _____  _____");
 		System.out.println("  /  |/ / __ `/ / / / __/ / / / / / ___/  / ___/ _ \'/ ___/ | / / _ \'/ ___/");
 		System.out.println(" / /|  / /_/ / /_/ / /_/ / / /_/ (__  )  (__  )  __/ /   | |/ /  __/ / ");
 		System.out.println("/_/ |_/\'__,_/\'__,_/\'__/_/_/\'__,_/____/  /____/\'___/_/    |___/\'___/_/ v.0.1");
-		System.out.println("\n");
 
 		server.startServer();
 	}
