@@ -34,8 +34,8 @@ public class Main {
 	private Client client;
 	
 	private void start(String[] args) {
+		ConfigHandler configHandler = new ConfigHandler();
 		if (!(new File("config.xml").exists())) {
-			ConfigHandler configHandler = new ConfigHandler();
 			configHandler.initializeConfig();
 		}
 		
@@ -49,6 +49,12 @@ public class Main {
 					break;
 				
 				case "-ck":
+					// Check if the config file have some server
+					if (configHandler.getConfig().getServerPreferences().size() == 0) {
+						System.err.println("You Don't have any server in your config.xml!! Put one for save your file");
+						System.exit(0);
+					}
+					
 					// Client - Keep the file
 					makeSavePetition(args);
 					break;
