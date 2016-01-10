@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -153,12 +154,10 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	
 	public List<String> getHostAndBackupFromConfig() {
 		List<String> preferences = configHandler.getConfig().getServerPreferences();
-		List<String> hostAndBackup = new ArrayList<String>();
-		Random randomizer = new Random();
-		for (int i = 0; i < 2; i++) {
-			hostAndBackup.add(preferences.get(randomizer.nextInt(preferences.size())));
-		}
-		return hostAndBackup;
+		long seed = System.nanoTime();
+		
+		Collections.shuffle(preferences, new Random(seed));
+		return preferences;
 	}
 	
 	
@@ -179,7 +178,6 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 		}
 		
 		// Get the baseName for make the join operation
-		//TODO: revisar esto con un archivo "loquesea.pdf.0"
 		String[] baseNameArray = keys.get(0).getFileName().split("\\.");
 		String baseName = "";
 		index = 0;

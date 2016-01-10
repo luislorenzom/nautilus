@@ -51,24 +51,48 @@ public class ClientImpl implements Client {
 		int index = 0;
 		
 		for (NautilusMessage msg : msgs) {
-			String host = connectionUtilities.getHostAndBackupFromConfig().get(0);
-			int result = startClient(host, msg);
-			
-			if (result == 1) {
-				// Save the host in the key file
-				nautilusKey.get(index).setHost(host);
+			List<String> serverPreferences = connectionUtilities.getHostAndBackupFromConfig();
+			for (String host : serverPreferences) {
+				//String host = serverPreferences.get(0);
+				int result = startClient(host, msg);
 				
-				// Delete the split file 
-				if (path != null) {
-					new File(path + "/"+ nautilusKey.get(index).getFileName()).delete();
-				} else {
-					new File(nautilusKey.get(index).getFileName()).delete();
-				}
-			} else {
-				//TODO: comprobar si se guardo bien, y si no probar con mas host de la config
-				String backup = connectionUtilities.getHostAndBackupFromConfig().get(1);	
-				startClient(backup, msg);
+				if (result == 1) {
+					// Save the host in the key file
+					nautilusKey.get(index).setHost(host);
+					
+					// Delete the split file 
+					if (path != null) {
+						new File(path + "/"+ nautilusKey.get(index).getFileName()).delete();
+					} else {
+						new File(nautilusKey.get(index).getFileName()).delete();
+					}
+					
+					// Check if exist one mirror (another server). if exist then copy the file
+					if (serverPreferences.size() > 1) {
+						int tmpIndex = 0;
+						for (String hostBackup : serverPreferences) {
+							if (hostBackup != host) {
+								int resultMirroring = startClient(hostBackup, msg);
+								
+								if (resultMirroring == 1) {
+									// Success, now save the hostBackup in the keyFile
+									nautilusKey.get(index).setHostBackup(hostBackup);
+									break;
+								}
+								
+								tmpIndex++;
+								
+								if (tmpIndex == serverPreferences.size()) {
+									break;
+								}
+								
+							}
+						}
+					}
+					break;
+				} 
 			}
+			
 			index++;
 		}
 		keysHandler.generateKeys(nautilusKey);
@@ -146,7 +170,13 @@ public class ClientImpl implements Client {
 
 		Collection<PeerAddress> addressList = client.peerBean().peerMap().all();
 		System.out.println("=====> "+addressList.size());
-
+		
+		// if can not connect with the server
+		if (addressList.size() == 0) {
+			client.shutdown();
+			return -1;
+		}
+		
 		if (futureDiscover.isSuccess()) {
 			System.out.println("found that my outside address is " + futureDiscover.peerAddress());
 		} else {
