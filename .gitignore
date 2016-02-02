@@ -1,17 +1,28 @@
-# Package Files #
+# Package Files
 *.jar
 *.war
 *.ear
 
-# class files #
+# Eclipse and java files
+.classpath
+.settings/
+.project
+.metadata
+
+# class files
 *.class
 
-# virtual machine crash logs #
+# virtual machine crash logs
 hs_err_pid*
 
-# Mac OSX files #
+# Mac OSX files
 .DS_Store
 .AppleDouble
 .LSOverride
 
 /target/
+
+# Project tmp files
+config.xml
+db.properties
+db.script
