@@ -4,7 +4,7 @@
 
   <groupId>es.udc.fic.tic</groupId>
   <artifactId>nautilus</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>nautilus</name>
@@ -45,12 +45,17 @@
       <scope>test</scope>
     </dependency>
     
-    <!-- SLF4J (required by Hibernate) -->
+    <!-- slf4j and log4j (required by tomp2p and hibernate) -->
+	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.14</version>
+	</dependency>
+	
 	<dependency>
 		<groupId>org.slf4j</groupId>
-		<artifactId>slf4j-simple</artifactId>
-		<version>${slf4j.version}</version>
-		<scope>runtime</scope>
+		<artifactId>slf4j-log4j12</artifactId>
+		<version>1.7.5</version>
 	</dependency>
 	
 	<!-- Javassist (required by Hibernate) -->
@@ -68,14 +73,14 @@
 		<version>1.52</version>
 	</dependency>
 	
-	<!-- JavaFX webview interface
+	<!-- JavaFX webview interface -->
     <dependency>
         <groupId>javafx</groupId>
         <artifactId>javafx</artifactId>
         <version>2.1</version>
         <scope>system</scope>
         <systemPath>${java.home}/lib/jfxrt.jar</systemPath>
-    </dependency> -->
+    </dependency>
 	
 	<!-- CGLIB (required by Spring) -->
 	<dependency>
