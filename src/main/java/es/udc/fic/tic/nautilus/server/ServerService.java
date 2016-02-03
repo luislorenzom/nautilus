@@ -34,4 +34,12 @@ public interface ServerService {
 	 * @throws FileUnavaliableException 
 	 */
 	public FileInfo returnFile(String hash) throws InstanceNotFoundException, FileUnavaliableException;
+	
+	/**
+	 * Check if one file can or not save in the system
+	 * 
+	 * @param Long fileSize
+	 * @return boolean for save or not the file
+	 */
+	public boolean checkFileSize(Long fileSize);
 }

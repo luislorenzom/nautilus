@@ -29,4 +29,14 @@ public class FileInfoDaoImpl extends GenericDaoImpl<FileInfo, Long> implements F
 		
 		return file;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public Long getAllSizes() {
+		List<Long> sizes = getSession().createQuery("SELECT f.size FROM FileInfo f").list();
+		long finalLong = 0;
+		for (Long size : sizes) {
+			finalLong += size;
+		}
+		return finalLong;
+	}
 }

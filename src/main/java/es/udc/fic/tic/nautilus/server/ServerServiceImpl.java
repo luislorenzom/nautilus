@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
@@ -115,5 +116,23 @@ public class ServerServiceImpl implements ServerService {
 			}
 			return file;
 		}
+	}
+	
+	@Transactional
+	public boolean checkFileSize(Long fileSize) {
+		ConfigHandler configHandler = new ConfigHandler();
+		long limit = configHandler.getConfig().getLimitSpace();
+		
+		/* all disk */
+		if (limit <= -1) {
+			return true;
+		}
+		
+		long folderSize = fileInfoDao.getAllSizes();
+		
+		if (folderSize + fileSize > limit) {
+			return false;
+		}
+		return true;
 	}
 }

@@ -38,4 +38,11 @@ public interface FileInfoDao extends GenericDao<FileInfo, Long> {
 	 * @throws InstanceNotFoundException
 	 */
 	public FileInfo findByHash(String hash) throws InstanceNotFoundException;
+	
+	/**
+	 * Find all the sizes save in the database
+	 * 
+	 * @return the sum of total sizes
+	 */
+	public Long getAllSizes();
 }

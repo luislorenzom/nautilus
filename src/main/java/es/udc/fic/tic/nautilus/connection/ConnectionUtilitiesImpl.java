@@ -55,9 +55,9 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	public int processMessageTypeOne(NautilusMessage msg) {
 		/* Check if the message is not null and this node is a server */
 		if ((msg != null) && (configHandler.getConfig().isServerAvailable())) {
-			int byteSize = msg.getContent().length;
+			long byteSize = msg.getContent().length;
 			/* Check if can save the file in the node */
-			if (CheckFileSize(byteSize)) {
+			if (serverService.checkFileSize(byteSize)) {
 				String filePath = configHandler.getConfig().getStorageFolder()+"/"+msg.getHash()+".aes256";
 				try {
 					FileOutputStream fos = new FileOutputStream(filePath);
@@ -249,46 +249,6 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	                .substring(1));
 	    }
 	    return stringBuffer.toString();
-	}
-	
-	/**
-	 * This function evaluate if the file can be save in the peer in
-	 * relation with configuration file
-	 * 
-	 * @param float fileSize
-	 * @return boolean that represents if the peer can save the file or not
-	 */
-	private boolean CheckFileSize(int fileSize) {
-		long limit = configHandler.getConfig().getLimitSpace();
-		
-		/* all disk */
-		if (limit <= -1) {
-			return true;
-		}
-		
-		long folderSize = folderSize(new File(configHandler.getConfig().getStorageFolder()));
-		
-		if (folderSize + fileSize > limit) {
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * This function calculate the size of directory
-	 * 
-	 * @param File the directory
-	 * @return long the all files length
-	 */
-	private long folderSize(File directory) {
-	    long length = 0;
-	    for (File file : directory.listFiles()) {
-	        if (file.isFile())
-	            length += file.length();
-	        else
-	            length += folderSize(file);
-	    }
-	    return length;
 	}
 	
 	/**

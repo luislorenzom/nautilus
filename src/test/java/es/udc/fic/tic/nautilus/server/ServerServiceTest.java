@@ -3,7 +3,9 @@ package es.udc.fic.tic.nautilus.server;
 import static es.udc.fic.tic.nautilus.util.ModelConstanst.SPRING_CONFIG_FILE;
 import static es.udc.fic.tic.nautilus.util.ModelConstanst.SPRING_CONFIG_TEST_FILE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,6 +31,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
+import es.udc.fic.tic.nautilus.config.NautilusConfig;
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.expcetion.StorageLimitException;
@@ -254,38 +257,44 @@ public class ServerServiceTest {
 		assertEquals(file.getHash(), hash);
 		assertEquals(file.getPath(), "~/nautilus/download1.aes");
 	}
-	/*
+	
 	@Test
-	public void underStorageLimit() throws Exception {
-		// Change the config parameter to add the storage limits
+	public void allowSaveFileTest() throws Exception {
 		ConfigHandler configHandler = new ConfigHandler();
-		NautilusConfig newConfig = new NautilusConfig(true, 7340032, ModelConstanst.LANGUAGE.ES, null, 
-				System.getProperty("user.home")+"/nautilus_storage");
+		NautilusConfig newConfig = configHandler.getConfig();
+		
+		newConfig.setServerAvailable(true);
+		newConfig.setLimitSpace(1000L);
 		configHandler.changeConfig(newConfig);
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
-		serverService.keepTheFile("~/nautilus_storage/download1.aes", 0, null, null, 1363148, hash);
+		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
+				null, null, 333, hash);
 		
-		FileInfo fileSaved = serverService.returnFile(hash);
-		
-		assertEquals(fileSaved.getHash(), hash);
+		boolean result = serverService.checkFileSize(666L);
+		assertTrue(result);
 	}
 	
-	@Test(expected=StorageLimitException.class)
-	public void onStorageLimit() throws Exception {
-		// Change the config parameter to add the storage limits
+	@Test
+	public void denySaveFileTest() throws Exception {
 		ConfigHandler configHandler = new ConfigHandler();
-		NautilusConfig newConfig = new NautilusConfig(true, 7340032, ModelConstanst.LANGUAGE.ES, null, 
-				System.getProperty("user.home")+"/nautilus_storage");
+		NautilusConfig newConfig = configHandler.getConfig();
+		
+		newConfig.setServerAvailable(true);
+		newConfig.setLimitSpace(1000L);
 		configHandler.changeConfig(newConfig);
 		
 		String hash = "21a57f2fe765e1ae4a8bf15d73fc1bf2a533f547f2343d12a499d9c0592044d4";
-		serverService.keepTheFile("~/nautilus_storage/download1.aes", 0, null, null, 4508876, hash);
+		serverService.keepTheFile("~/nautilus/download1.aes", 0, 
+				null, null, 333, hash);
+	
+		String hash2 = "21a57f2fe735e1ae4a9bf15d33fc1af2a533f547f2343d12a499d9c0592044d4";
+		serverService.keepTheFile("~/nautilus/download2.aes", 0, 
+				null, null, 666, hash2);
 		
-		FileInfo fileSaved = serverService.returnFile(hash);
-		
-		assertEquals(fileSaved.getHash(), hash);
-	}*/
+		boolean result = serverService.checkFileSize(2L);
+		assertFalse(result);
+	}
 	
 	/*********************
 	 * Private functions *
