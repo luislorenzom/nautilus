@@ -132,8 +132,6 @@ public class ClientImpl implements Client {
 						System.exit(0);
 					}
 				} else {
-					//TODO: pulir los mensajes de error, indicar si es porque se acabo el limite
-					// o lo que queda para que se libere el fichero
 					System.out.println("Can't recovery the file");
 					System.exit(0);
 				}

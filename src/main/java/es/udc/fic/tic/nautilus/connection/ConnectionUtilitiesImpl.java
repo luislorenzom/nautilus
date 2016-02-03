@@ -43,8 +43,15 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			try {
 				FileInfo fileInfo = serverService.returnFile(msg.getHash());
 				File file = new File(fileInfo.getPath());
+				//----
+				// checked if the file is corrupted
+				if (!(msg.getHash().equals(getHashFromFile(file, "SHA-256")))) {
+					//the split file is corrupted
+					return null;
+				}
+				//---
 				return readContentIntoByteArray(file);
-			} catch(Exception e) {
+			} catch (Exception e) {
 				return null;
 			}
 		}
@@ -163,43 +170,49 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	
 	@Override
 	public void restoreFile(List<File> files, List<NautilusKey> keys) throws Exception {
-		int index = 0;
-		List<File> deleteFiles = new ArrayList<File>();
-		// Decrypt
-		for (File file : files) {
-			clientService.decrypt(keys.get(index).getKey(), file.getPath(), ModelConstanst.ENCRYPT_ALG.AES);
-			index++;
-			
-			// delete encrypt file
-			file.delete();
-			
-			int lenghtDeleteFiles = file.getName().length() - 7;
-			deleteFiles.add(new File("dec_"+file.getName().substring(0, lenghtDeleteFiles)));
-		}
-		
-		// Get the baseName for make the join operation
-		String[] baseNameArray = keys.get(0).getFileName().split("\\.");
-		String baseName = "";
-		index = 0;
-		for (String baseNameFrag : baseNameArray) {
-			if (index == (baseNameArray.length - 2)) {
-				break;
+		try {
+			int index = 0;
+			List<File> deleteFiles = new ArrayList<File>();
+			// Decrypt
+			for (File file : files) {
+				clientService.decrypt(keys.get(index).getKey(), file.getPath(), ModelConstanst.ENCRYPT_ALG.AES);
+				index++;
+				
+				// delete encrypt file
+				file.delete();
+				
+				int lenghtDeleteFiles = file.getName().length() - 7;
+				deleteFiles.add(new File("dec_"+file.getName().substring(0, lenghtDeleteFiles)));
 			}
 			
-			if (index == (baseNameArray.length - 3)) {
-				baseName += baseNameFrag;
-			} else {
-				baseName += baseNameFrag + ".";
+			// Get the baseName for make the join operation
+			String[] baseNameArray = keys.get(0).getFileName().split("\\.");
+			String baseName = "";
+			index = 0;
+			for (String baseNameFrag : baseNameArray) {
+				if (index == (baseNameArray.length - 2)) {
+					break;
+				}
+				
+				if (index == (baseNameArray.length - 3)) {
+					baseName += baseNameFrag;
+				} else {
+					baseName += baseNameFrag + ".";
+				}
+				
+				index++;
 			}
 			
-			index++;
-		}
-		
-		// Join
-		clientService.fileJoin("dec_"+baseName);
-		
-		for (File fileToDelete : deleteFiles) {
-			fileToDelete.delete();
+			// Join
+			clientService.fileJoin("dec_"+baseName);
+			
+			for (File fileToDelete : deleteFiles) {
+				fileToDelete.delete();
+			}
+		} catch (Exception e) {
+			//TODO: añadir otro catch para cuando la clave sea incorreta
+			System.err.println("The file is corrupt");
+			//e.printStackTrace();
 		}
 	}
 	
