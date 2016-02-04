@@ -118,7 +118,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				 }
 			 }
 			 
-			 /* Preparamos una lista para despues convertir a la llave xml */
+			 /* Prepare the list that before we turned to a XML key */
 			 List<NautilusKey> keysList = new ArrayList<NautilusKey>();
 			 
 			 /* Now encrypt the files and generate a key */

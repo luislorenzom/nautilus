@@ -3,6 +3,7 @@ package es.udc.fic.tic.nautilus;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -13,7 +14,6 @@ import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.connection.Client;
 import es.udc.fic.tic.nautilus.connection.Server;
 
-import java.util.Calendar;
 
 @Component
 public class Main {
@@ -34,6 +34,7 @@ public class Main {
 	private Client client;
 	
 	private void start(String[] args) {
+		//LogManager.getLogManager().reset();
 		ConfigHandler configHandler = new ConfigHandler();
 		if (!(new File("config.xml").exists())) {
 			configHandler.initializeConfig();

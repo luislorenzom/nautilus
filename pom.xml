@@ -142,6 +142,13 @@
 	  <artifactId>tomp2p-examples</artifactId>
 	  <version>5.0-Beta8</version>
 	</dependency>
+	
+	<!-- Codec for base64Utils -->
+	<dependency>
+		<groupId>commons-codec</groupId>
+		<artifactId>commons-codec</artifactId>
+		<version>1.4</version>
+	</dependency>
 	    
   </dependencies>
   

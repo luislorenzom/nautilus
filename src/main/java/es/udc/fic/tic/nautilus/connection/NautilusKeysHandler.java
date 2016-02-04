@@ -3,7 +3,6 @@ package es.udc.fic.tic.nautilus.connection;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.crypto.SecretKey;
@@ -14,6 +13,7 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.springframework.util.Base64Utils;
 
 public class NautilusKeysHandler {
 	
@@ -130,25 +130,23 @@ public class NautilusKeysHandler {
 	/* Private functions */
 	/*********************/
 	
+	/**
+	 * This function convert one SecretKey to String
+	 * 
+	 * @param SecretKey secretKey
+	 * @return String The string of the SecretKey
+	 */
 	private String secretKeyToString (SecretKey secretKey) {
-		byte[] bytes = secretKey.getEncoded();
-		String stringKey = Arrays.toString(bytes);
-		return stringKey;
+		return Base64Utils.encodeToString(secretKey.getEncoded());
 	}
 	
-	private SecretKey stringToSecretKey (String stringKey) {
-		String[] byteValues = stringKey.substring(1, stringKey.length() - 1).split(",");
-		byte[] bytes = new byte[byteValues.length];
-		
-		for (int i=0, len=bytes.length; i<len; i++) {
-			bytes[i] = Byte.parseByte(byteValues[i].trim());
-		}
-		
-		// convert to string
-		/* String str = new String(bytes); */
-		
-		SecretKey key = new SecretKeySpec(bytes, 0, 32, "AES");
-		
-		return key;
+	/**
+	 * This functions convert one String to SecretKey
+	 * 
+	 * @param String stringKey
+	 * @return SecretKey The secretKey got on the string
+	 */
+	private SecretKey stringToSecretKey (String stringKey) {		
+		return new SecretKeySpec(Base64Utils.decodeFromString(stringKey), "AES");
 	}
 }
