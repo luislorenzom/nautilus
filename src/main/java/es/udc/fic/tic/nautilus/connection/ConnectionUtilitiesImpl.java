@@ -111,11 +111,13 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			File[] files = new File(pathForList).listFiles();
 			 /* Get the file's chunks */
 			 for (File fileEntry : files) {
-				 if (fileEntry.getName().contains(getNameAboutPath(filePath)) &&
-					(fileEntry.getName()).substring(fileEntry.getName().length() - 1).matches("[0-9]+") &&
-					! fileEntry.getPath().equals(filePath)) {
-					 splitFiles.add(fileEntry);
-				 }
+				 if (fileEntry.getName().contains(getNameAboutPath(filePath))) {
+					  if ((fileEntry.getName()).substring(fileEntry.getName().length() - 1).matches("[0-9]+")) {
+						  if (!(fileEntry.getPath().equals(filePath))) {
+								 splitFiles.add(fileEntry);
+						  }
+					  }
+			 	 }
 			 }
 			 
 			 /* Prepare the list that before we turned to a XML key */
