@@ -181,10 +181,12 @@ public class ClientImpl implements Client {
 						filesJoin.add(newFile);
 					} else {
 						System.out.println("Can't recovery the file");
+						deleteFilesToJoin(filesJoin);
 						System.exit(0);
 					}
 				} else {
 					System.out.println("Can't recovery the file");
+					deleteFilesToJoin(filesJoin);
 					System.exit(0);
 				}
 			}
@@ -367,6 +369,17 @@ public class ClientImpl implements Client {
 		
 		for (NautilusKey key : nautilusKey) {
 			new File(parentPath + "/" +key.getFileName()).delete();
+		}
+	}
+	
+	/**
+	 * This function clean all the tmp files if you can't recovery all of the splits
+	 * 
+	 * @param ArrayList<File> filesToJoin
+	 */
+	private void deleteFilesToJoin(List<File> filesJoin) {
+		for (File file : filesJoin) {
+			file.delete();
 		}
 	}
 }
