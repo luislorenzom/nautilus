@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -26,7 +27,7 @@ import net.tomp2p.peers.PeerAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import es.udc.fic.tic.nautilus.config.ConfigHandler;
+import es.udc.fic.tic.nautilus.util.RSAManager;
 
 @Service("client")
 public class ClientImpl implements Client {
@@ -34,17 +35,27 @@ public class ClientImpl implements Client {
 	@Autowired
 	private ConnectionUtilities connectionUtilities;
 	
-	public ConfigHandler configHandler = new ConfigHandler();
-	public NautilusKeysHandler keysHandler = new NautilusKeysHandler();
-	
+	private NautilusKeysHandler keysHandler = new NautilusKeysHandler();
+	private RSAManager manager = new RSAManager();
 	
 	@Override
 	public void saveFileInNetwork(String filePath, int downloadLimit,
-			Calendar dateLimit, Calendar dateRelease) throws Exception {
+			Calendar dateLimit, Calendar dateRelease, String pKeyPath) throws Exception {
+		
+		// Initialize and generate public key only if exist 
+		PublicKey pkey = null;
+		if (pKeyPath != null) {
+			try {
+				pkey = manager.getPublicKeyFromFile(pKeyPath);
+			} catch (Exception e) {
+				System.err.println("Can't recovery the public key, check the argument");
+				System.exit(0);
+			}
+		}
 		
 		String path = new File(filePath).getParent();
 		List<NautilusMessage> msgs = connectionUtilities.prepareFileToSend(filePath, 
-				downloadLimit, dateLimit, dateRelease);
+				downloadLimit, dateLimit, dateRelease, pkey);
 		
 		
 		List<NautilusKey> nautilusKey = keysHandler.getKeys(new File(filePath).getName()+"_key.xml");

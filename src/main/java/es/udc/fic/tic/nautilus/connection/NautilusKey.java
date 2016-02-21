@@ -1,20 +1,22 @@
 package es.udc.fic.tic.nautilus.connection;
 
-import javax.crypto.SecretKey;
+import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
 
 public class NautilusKey {
 	
 	private String fileName;
-	private SecretKey key;
+	private String key;
+	private ENCRYPT_ALG encryptAlg;
 	private String hash;
 	private String host;
 	private String hostBackup;
 	
-	public NautilusKey(String fileName, SecretKey key, String hash,
-			String host, String hostBackup) {
+	public NautilusKey(String fileName, String key, ENCRYPT_ALG encryptAlg
+			,String hash, String host, String hostBackup) {
 		super();
 		this.fileName = fileName;
 		this.key = key;
+		this.encryptAlg = encryptAlg;
 		this.setHash(hash);
 		this.host = host;
 		this.hostBackup = hostBackup;
@@ -28,12 +30,20 @@ public class NautilusKey {
 		this.fileName = fileName;
 	}
 
-	public SecretKey getKey() {
+	public String getKey() {
 		return key;
 	}
 
-	public void setKey(SecretKey key) {
+	public void setKey(String key) {
 		this.key = key;
+	}
+
+	public ENCRYPT_ALG getEncryptAlg() {
+		return encryptAlg;
+	}
+
+	public void setEncryptAlg(ENCRYPT_ALG encryptAlg) {
+		this.encryptAlg = encryptAlg;
 	}
 
 	public String getHost() {

@@ -56,29 +56,12 @@ public class RSAManager {
 	 * @return PublicKey The public key save in the program folder
 	 */
 	public PublicKey getPublicKey () {
-		PublicKey key = null;
 		try {
-			// Open the file and read the bytes
-			File publicKeyFile = new File("public.key");
-	        FileInputStream fis = new FileInputStream(publicKeyFile);
-	        DataInputStream dis = new DataInputStream(fis);
-	        byte[] keyBytes = new byte[(int) publicKeyFile.length()];
-	        dis.readFully(keyBytes);
-	        dis.close();
-	        
-	        // Decode the bytes
-	        String tmp = new String(keyBytes);
-	        byte[] tmpDecoded = Base64Utils.decodeFromString(tmp);
-	        
-	        // Transform the bytes into PublicKey
-	        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(tmpDecoded);
-	        KeyFactory kf = KeyFactory.getInstance("RSA");
-	        key = kf.generatePublic(keySpec);
-	        
+			return getPublicKeyFromFile("public.key");
 		} catch (Exception e) {
-			System.err.println("Can't recovery the public key");
+			System.err.println("Can't recovery the private key");
+			return null;
 		}
-		return key;
 	}
 	
 	/**
@@ -144,20 +127,52 @@ public class RSAManager {
 	 * @param PrivateKey the private for decrypt the message
 	 * @return String the decrypt string 
 	 */
-	public String decrypt (String encryptString, PrivateKey key) {
+	public String decrypt (String encryptString, PrivateKey key) throws Exception {
 		String plainMessage = null;
-		try {
-			// Initialized the cipher in encrypt mode
-			Cipher cipher = Cipher.getInstance("RSA");
-			cipher.init(Cipher.DECRYPT_MODE, key);
-			
-			// Decrypt the message
-			byte[] data = cipher.doFinal(Base64Utils.decode(encryptString.getBytes()));
-			plainMessage = new String (data);
-			
-		} catch (Exception e) {
-			System.err.println("Can't decrypt the information");
-		}
+		// Initialized the cipher in encrypt mode
+		Cipher cipher = Cipher.getInstance("RSA");
+		cipher.init(Cipher.DECRYPT_MODE, key);
+		
+		// Decrypt the message
+		byte[] data = cipher.doFinal(Base64Utils.decode(encryptString.getBytes()));
+		plainMessage = new String (data);
 		return plainMessage;
+	}
+	
+	/**
+	 * Check if exists the two keys
+	 * 
+	 * @return boolean 
+	 */
+	public boolean existsPair() {
+		return ((new File("private.key").exists()) && (new File("public.key").exists()));
+	}
+	
+	/**
+	 * Get public key from file
+	 * 
+	 * @param String keyPath
+	 * @return PublicKey
+	 */
+	public PublicKey getPublicKeyFromFile(String keyPath) throws Exception {
+		PublicKey key = null;
+		// Open the file and read the bytes
+		File publicKeyFile = new File(keyPath);
+        FileInputStream fis = new FileInputStream(publicKeyFile);
+        DataInputStream dis = new DataInputStream(fis);
+        byte[] keyBytes = new byte[(int) publicKeyFile.length()];
+        dis.readFully(keyBytes);
+        dis.close();
+        
+        // Decode the bytes
+        String tmp = new String(keyBytes);
+        byte[] tmpDecoded = Base64Utils.decodeFromString(tmp);
+        
+        // Transform the bytes into PublicKey
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(tmpDecoded);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        key = kf.generatePublic(keySpec);
+	        
+		return key;
 	}
 }

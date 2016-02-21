@@ -11,8 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-
-import javax.crypto.SecretKey;
+import java.security.KeyPair;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -24,6 +23,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
+import es.udc.fic.tic.nautilus.util.RSAManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { SPRING_CONFIG_FILE, SPRING_CONFIG_TEST_FILE })
@@ -32,6 +32,8 @@ public class ClientServiceTest {
 	
 	@Autowired
 	private ClientService clientService;
+	
+	private RSAManager manager = new RSAManager();
 	
 	// Download a file to make the test
 	@BeforeClass
@@ -58,8 +60,10 @@ public class ClientServiceTest {
 	@AfterClass
 	public static void deteleFileForTest() {
 		new File("photo.png").delete();
-		new File("photo.png.aes").delete();
+		new File("photo.png.aes256").delete();
 		new File("dec_photo.png").delete();
+		new File("public.key").delete();
+		new File("private.key").delete();
 	}
 	
 	@Test
@@ -98,20 +102,31 @@ public class ClientServiceTest {
 	}
 	
 	@Test
-	public void encryAndDecrypttWithAesTest() throws Exception {
-		
-		SecretKey key = clientService.encryptFile("photo.png", ENCRYPT_ALG.AES);
+	public void encryptAndDecryptWithAesTest() throws Exception {
+		KeyContainer key = clientService.encryptFile("photo.png", ENCRYPT_ALG.AES, null);
 		File file = new File("photo.png.aes256");
 		assertNotNull(file);
 		assertNotNull(new File(generateKeyName("photo.png")));
 		
-		clientService.decrypt(key, "photo.png.aes256", ENCRYPT_ALG.AES);
+		clientService.decrypt(key.getKey(), "photo.png.aes256", ENCRYPT_ALG.AES);
 		File decodeFile = new File("dec_photo.png");
 		assertNotNull(decodeFile);
  		assertEquals(new File("photo.png").length(), decodeFile.length());
 	}
 	
-	
+	@Test
+	public void encryptAndDecryptWithRSATest() throws Exception {
+		KeyPair pair = manager.generateKeys();
+		KeyContainer key = clientService.encryptFile("photo.png", ENCRYPT_ALG.RSA, pair.getPublic());
+		File file = new File("photo.png.aes256");
+		assertNotNull(file);
+		assertNotNull(new File(generateKeyName("photo.png")));
+		
+		clientService.decrypt(key.getKey(), "photo.png.aes256", ENCRYPT_ALG.RSA);
+		File decodeFile = new File("dec_photo.png");
+		assertNotNull(decodeFile);
+ 		assertEquals(new File("photo.png").length(), decodeFile.length());
+	}
 	
 	/*********************
 	 * Private functions *

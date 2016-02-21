@@ -5,15 +5,13 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import org.springframework.util.Base64Utils;
+
+import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
 
 public class NautilusKeysHandler {
 	
@@ -47,14 +45,22 @@ public class NautilusKeysHandler {
 					Element keyElement = (Element)keyListXml.get(i);
 					
 					String fileName = keyElement.getChildText("fileName");
-					String aesKeyText = keyElement.getChildText("AESKey");
+					
+					String key = null;
+					ENCRYPT_ALG algorithm;
+					if (keyElement.getChildText("AESKey") == null) {
+						key = keyElement.getChildText("RSAKey");
+						algorithm = ENCRYPT_ALG.RSA;
+					} else {
+						key = keyElement.getChildText("AESKey");
+						algorithm = ENCRYPT_ALG.AES;
+					}
+					
 					String hash = keyElement.getChildText("hash");
 					String host = keyElement.getChildText("host");
 					String hostBackup = keyElement.getChildText("hostBackup");
-
-					SecretKey key = stringToSecretKey(aesKeyText);
 					
-					NautilusKey nkey = new NautilusKey(fileName, key, hash, host, hostBackup);
+					NautilusKey nkey = new NautilusKey(fileName, key, algorithm, hash, host, hostBackup);
 					
 					keysList.add(nkey);
 				}
@@ -89,8 +95,12 @@ public class NautilusKeysHandler {
 						key.addContent(new Element("fileName").setText(keyItem.getFileName()));
 					}
 					
-					if (keyItem.getKey() != null) {
-						key.addContent(new Element("AESKey").setText(secretKeyToString(keyItem.getKey())));
+					if ((keyItem.getKey() != null) && (keyItem.getEncryptAlg() == ENCRYPT_ALG.AES)) {
+						key.addContent(new Element("AESKey").setText(keyItem.getKey()));
+					}
+					
+					if ((keyItem.getKey() != null) && (keyItem.getEncryptAlg() == ENCRYPT_ALG.RSA)) {
+						key.addContent(new Element("RSAKey").setText(keyItem.getKey()));
 					}
 					
 					if (keyItem.getHash() != null) {
@@ -124,29 +134,5 @@ public class NautilusKeysHandler {
 		} catch (Exception e) {
 			System.err.println("Can't generate a XML key");
 		}
-	}
-	
-	/*********************/
-	/* Private functions */
-	/*********************/
-	
-	/**
-	 * This function convert one SecretKey to String
-	 * 
-	 * @param SecretKey secretKey
-	 * @return String The string of the SecretKey
-	 */
-	private String secretKeyToString (SecretKey secretKey) {
-		return Base64Utils.encodeToString(secretKey.getEncoded());
-	}
-	
-	/**
-	 * This functions convert one String to SecretKey
-	 * 
-	 * @param String stringKey
-	 * @return SecretKey The secretKey got on the string
-	 */
-	private SecretKey stringToSecretKey (String stringKey) {		
-		return new SecretKeySpec(Base64Utils.decodeFromString(stringKey), "AES");
 	}
 }

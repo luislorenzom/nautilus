@@ -12,7 +12,8 @@ public interface Client {
 	 * @param Calendar dataLimit
 	 * @param Calendar dataRelease
 	 */
-	public void saveFileInNetwork(String filePath, int downloadLimit, Calendar dateLimit, Calendar dateRelease) throws Exception;
+	public void saveFileInNetwork(String filePath, int downloadLimit, Calendar dateLimit, 
+			Calendar dateRelease, String pKeyPath) throws Exception;
 
 	/**
 	 * this function recovery the file from the key file

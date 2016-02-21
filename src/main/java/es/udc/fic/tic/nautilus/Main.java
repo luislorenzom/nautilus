@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.connection.Client;
 import es.udc.fic.tic.nautilus.connection.Server;
+import es.udc.fic.tic.nautilus.util.RSAManager;
 
 
 @Component
@@ -35,13 +36,24 @@ public class Main {
 	
 	private void start(String[] args) {
 		//LogManager.getLogManager().reset();
+		RSAManager manager = new RSAManager();
 		ConfigHandler configHandler = new ConfigHandler();
+		
+		// If don't exist the configuration file then generate it
 		if (!(new File("config.xml").exists())) {
 			configHandler.initializeConfig();
 		}
 		
-		/*TODO: comprobar que existe la carpeta para almacenar o tomar
-		 * comprobar el espacio donado disponible contra la base de datos*/
+		// if don't exist key pair then generate them
+		if (!manager.existsPair()) {
+			manager.generateKeys();
+		}
+		
+		// If don't exist storage folder then create it
+		if (!(new File(configHandler.getConfig().getStorageFolder()).exists())) {
+			new File(configHandler.getConfig().getStorageFolder()).mkdir();
+		}
+		
 		try {
 			switch (args[0]) {
 				case "-s":
@@ -52,7 +64,7 @@ public class Main {
 				case "-ck":
 					// Check if the config file have some server
 					if (configHandler.getConfig().getServerPreferences().size() == 0) {
-						System.err.println("You Don't have any server in your config.xml!! Put one for save your file");
+						System.err.println("You don't have any server in your config.xml!! Put one for save your file");
 						System.exit(0);
 					}
 					
@@ -72,8 +84,7 @@ public class Main {
 			}
 			
 		} catch (Exception e) {
-			//System.err.println("Error!");
-			e.printStackTrace();
+			System.err.println("Error!! Use any command for run the server (-s) or save some file (-ck yourfile.txt)");
 		}
 	}
 	
@@ -95,6 +106,7 @@ public class Main {
 			int index = 2;
 			Calendar dateLimit = null;
 			Calendar dateRelease = null;
+			String pkeyPath = null;
 			DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
 			String dateRegex = "^(3[01]|[12][0-9]|0[1-9])/(1[0-2]|0[1-9])/[0-9]{4}$";
 			
@@ -139,14 +151,25 @@ public class Main {
 					}
 				}
 			}
+
+			// Get the publicKey path
+			if (index < args.length) {
+				if (args[index].equals("-pkey")) {
+					try {
+						pkeyPath = args[index+1];
+					} catch (Exception e) {
+						pkeyPath = "public.key";
+					}
+				}
+			}
 			
-			client.saveFileInNetwork(args[1], downloadLimit, dateLimit, dateRelease);	
+			client.saveFileInNetwork(args[1], downloadLimit, dateLimit, dateRelease, pkeyPath);	
 		} else {
 			System.err.println("Don't have selected a file for keep");
 		}
 	}
 	
-	private void makeRetrievalPetition(String[] args) throws Exception{
+	private void makeRetrievalPetition(String[] args) throws Exception {
 		if (args[1] != null) {
 			client.getFileFromKey(args[1]);					
 		} else {

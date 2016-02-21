@@ -6,23 +6,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import javax.crypto.SecretKey;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import es.udc.fic.tic.nautilus.client.ClientService;
+import es.udc.fic.tic.nautilus.client.KeyContainer;
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.expcetion.HashGenerationException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.server.ServerService;
-import es.udc.fic.tic.nautilus.util.ModelConstanst;
 import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
 
 @Service("connectionUtilities")
@@ -44,7 +43,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				FileInfo fileInfo = serverService.returnFile(msg.getHash());
 				File file = new File(fileInfo.getPath());
 				//----
-				// checked if the file is corrupted
+				// checking if the file is corrupted
 				if (!(msg.getHash().equals(getHashFromFile(file, "SHA-256")))) {
 					//the split file is corrupted
 					return null;
@@ -90,13 +89,8 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	}
 
 	@Override
-	public List<NautilusMessage> getMessagesFromKey(String hash) {
-		return null;
-	}
-
-	@Override
-	public List<NautilusMessage> prepareFileToSend(String filePath,
-			int downloadLimit, Calendar dateLimit, Calendar releaseDate) {
+	public List<NautilusMessage> prepareFileToSend(String filePath, int downloadLimit,
+			Calendar dateLimit, Calendar releaseDate, PublicKey pKey) {
 		List<NautilusMessage> msgs = new ArrayList<NautilusMessage>();
 		try {
 			String pathForList = ".";
@@ -125,9 +119,17 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			 
 			 /* Now encrypt the files and generate a key */
 			 for (File fileEntry : splitFiles) {
+				 // Initialize the key container
+				 KeyContainer key = null;
 				 
 				 // Encrypt
-				 SecretKey key = clientService.encryptFile(fileEntry.getPath(), ENCRYPT_ALG.AES);
+				 if (pKey == null) {
+					 // if public key doesn't exist then encrpyt with AES
+					 key = clientService.encryptFile(fileEntry.getPath(), ENCRYPT_ALG.AES, null);
+				 } else {
+					 // if the public key exists the encrypt with RSA
+					 key = clientService.encryptFile(fileEntry.getPath(), ENCRYPT_ALG.RSA, pKey);
+				 }
 				 
 				 String EncryptfileName = fileEntry.getName()+".aes256";
 				 
@@ -139,7 +141,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				 String hash = getHashFromFile(encryptFile, "SHA-256");
 				 
 				 // We generate a key and adding to list, after when send the file will save the host
-				 NautilusKey nKey = new NautilusKey(EncryptfileName, key, hash, null, null);
+				 NautilusKey nKey = new NautilusKey(EncryptfileName, key.getKey(), key.getEncrypt_alg(), hash, null, null);
 				 keysList.add(nKey);
 				 
 				 // Generate a message
@@ -177,7 +179,12 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			List<File> deleteFiles = new ArrayList<File>();
 			// Decrypt
 			for (File file : files) {
-				clientService.decrypt(keys.get(index).getKey(), file.getPath(), ModelConstanst.ENCRYPT_ALG.AES);
+				if (keys.get(index).getEncryptAlg() == ENCRYPT_ALG.AES) {
+					clientService.decrypt(keys.get(index).getKey(), file.getPath(), ENCRYPT_ALG.AES);
+				} else {
+					clientService.decrypt(keys.get(index).getKey(), file.getPath(), ENCRYPT_ALG.RSA);
+				}
+				
 				index++;
 				
 				// delete encrypt file
@@ -211,10 +218,20 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			for (File fileToDelete : deleteFiles) {
 				fileToDelete.delete();
 			}
+		} catch (javax.crypto.BadPaddingException e1) {
+			// The private key is wrong
+			System.err.println("The private Key is wrong");
+			
+			for (File file : files) {
+				file.delete();
+			}
+			
+			System.exit(0);
+			
 		} catch (Exception e) {
-			//TODO: añadir otro catch para cuando la clave sea incorreta
+			// The file is corrupt
+			e.printStackTrace();
 			System.err.println("The file is corrupt");
-			//e.printStackTrace();
 		}
 	}
 	

@@ -8,18 +8,21 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.List;
+import java.security.PublicKey;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
 
-import es.udc.fic.tic.nautilus.util.Metadata;
+import es.udc.fic.tic.nautilus.util.ModelConstanst;
 import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
+import es.udc.fic.tic.nautilus.util.RSAManager;
 
 
 
@@ -27,6 +30,7 @@ import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
 public class ClientServiceImpl implements ClientService {
 	
 	//private long chunkSize = 2199;
+	private RSAManager manager = new RSAManager();
 
 	public void fileSplit(String filePath) throws IOException {
 		// Open the file
@@ -90,40 +94,36 @@ public class ClientServiceImpl implements ClientService {
 		out.close();
 	}
 
-	public SecretKey encryptFile(String filePath, ENCRYPT_ALG algorithm) 
+	public KeyContainer encryptFile(String filePath, ENCRYPT_ALG algorithm, PublicKey publicKey) 
 			throws Exception {
 		
 		switch (algorithm) {
 		case RSA:
-			/* llamar a una funcion privada que cifre el fichero con rsa */
-			break;
-
+			// Encrypt with RSA4096
+			String RSAkey = encryptWithRSA(filePath, publicKey);
+			return new KeyContainer(RSAkey, ModelConstanst.ENCRYPT_ALG.RSA);
 		case AES:
-			// Encrypt
-			return encryptWithAES(filePath);
+			// Encrypt with AES256
+			String AESkey = secretKeyToString(encryptWithAES(filePath));
+			return new KeyContainer(AESkey, ModelConstanst.ENCRYPT_ALG.AES);
 		}
 		return null;
 	}
 
-	public List<File> decrypt(SecretKey key, String filePath, ENCRYPT_ALG algorithm) 
+	public void decrypt(String key, String filePath, ENCRYPT_ALG algorithm) 
 			throws Exception {
 		
 		switch (algorithm) {
 		case RSA:
-			/* llamar a una funcion privada que descifre el fichero con rsa */
+			// Decrypt with RSA
+			decryptWithRSA(filePath, key);
 			break;
 
 		case AES:
-			// Decrypt
-			this.decryptWithAES(filePath, key);
+			// Decrypt with AES
+			decryptWithAES(filePath, key);
 			break;
 		}
-		return null;
-	}
-	
-	public File generateMetadata(Metadata metadata) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 	
 	/*********************
@@ -184,7 +184,6 @@ public class ClientServiceImpl implements ClientService {
 	 * 
 	 * @param fileContent
 	 * @param fileName
-	 * 
 	 * @throws Exception
 	 */
 	private SecretKey encryptWithAES(String fileName) throws Exception {
@@ -196,23 +195,17 @@ public class ClientServiceImpl implements ClientService {
 		Cipher aesCipher = Cipher.getInstance("AES");
 		aesCipher.init(Cipher.ENCRYPT_MODE, key);
 		
-		try(FileOutputStream fos = new FileOutputStream(fileName+".aes256")) {			
-			
-			// Code for save a key in a file
-			/*String fileNameKey = generateKeyName(fileName);
-			@SuppressWarnings("resource")
-			FileOutputStream fos_key = new FileOutputStream(fileNameKey);
-			fos_key.write(key.getEncoded());*/
-			// -----------------------------------------------------
-			
-			 //creating file input stream to read contents for encryption
+		try(FileOutputStream fos = new FileOutputStream(fileName+".aes256")) {
+			//creating file input stream to read contents for encryption
 			try (FileInputStream fis = new FileInputStream(fileName)) {
 				//creating cipher output stream to write encrypted contents
 			    try (CipherOutputStream cos = new CipherOutputStream(fos, aesCipher)) {
 			    	int read;
 			    	byte buf[] = new byte[4096];
-			    	while((read = fis.read(buf)) != -1)  //reading from file
-			    		cos.write(buf, 0, read);  //encrypting and writing to file
+			    	//reading from file
+			    	while((read = fis.read(buf)) != -1)
+			    		//encrypting and writing to file
+			    		cos.write(buf, 0, read);
 			    }
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -221,52 +214,88 @@ public class ClientServiceImpl implements ClientService {
 		return key;
 	}
 	
-	private void decryptWithAES(String fileName, SecretKey key) throws Exception {
-		/*byte[] keybyte = new byte[32];
-		@SuppressWarnings("resource")
-		FileInputStream fin = new FileInputStream(keyPath);
-		fin.read(keybyte);
-		SecretKey key = new SecretKeySpec(keybyte, 0, 32, "AES");*/
+	/**
+	 * This function decrypt one file with AES algorithm
+	 * 
+	 * @param String fileName
+	 * @param SecretKey the for decrypt the file
+	 * @throws Exception
+	 */
+	private void decryptWithAES(String fileName, String stringKey) throws Exception {
+		SecretKey key = stringToSecretKey(stringKey);
 		
-	  //creating file input stream to read from file
+		//creating file input stream to read from file
 		try(FileInputStream fis = new FileInputStream(fileName)) {
-		   //creating object input stream to read objects from file
-		   //ObjectInputStream ois = new ObjectInputStream(fis);
-		   //key = (SecretKey)ois.readObject();  //reading key used for encryption
-		   
-		   Cipher aesCipher = Cipher.getInstance("AES");  //getting cipher for AES
-		   aesCipher.init(Cipher.DECRYPT_MODE, key);  //initializing cipher for decryption 
-		   //with key creating file output stream to write back original contents
-		   
-		   try(FileOutputStream fos = new FileOutputStream("dec_"+fileName.substring(0
+			//getting cipher for AES
+			Cipher aesCipher = Cipher.getInstance("AES");
+			//initializing cipher for decryption 
+			aesCipher.init(Cipher.DECRYPT_MODE, key);
+			
+			//with key creating file output stream to write back original contents
+			try(FileOutputStream fos = new FileOutputStream("dec_"+fileName.substring(0
 				   , fileName.length()-7))) {
-			   //creating cipher input stream to read encrypted contents
-			   try(CipherInputStream cis = new CipherInputStream(fis, aesCipher)) {
-				   int read;
-				   byte buf[] = new byte[4096];
-				   while((read = cis.read(buf)) != -1)  //reading from file
-					   fos.write(buf, 0, read);  //decrypting and writing to file
-			   }
-		   }
+				//creating cipher input stream to read encrypted contents
+				try(CipherInputStream cis = new CipherInputStream(fis, aesCipher)) {
+					int read;
+					byte buf[] = new byte[4096];
+					//reading from file
+					while((read = cis.read(buf)) != -1)
+						//decrypting and writing to file
+						fos.write(buf, 0, read);
+				}
+			}
 		}
-	  }
-	
-	
-	/* tendra que recibir las claves publicas como parametros?? */
-	@SuppressWarnings("unused")
-	private void encryptWithRSA(String filePath) {
-		// TODO
 	}
 	
-	@SuppressWarnings("unused")
-	private String generateKeyName(String fileName) {
-		
-		String finalName = "";
-		String[] chunks = fileName.split(".");
-		for (String chunk : chunks) {
-			finalName += chunk;
+	
+	/**
+	 * This function encrypt with RSA 4096 algorithm
+	 * 
+	 * @param String filePath
+	 * @param PublicKey key
+	 * @return The encrypted key
+	 */
+	private String encryptWithRSA(String filePath, PublicKey key) {
+		String encryptedKey = null;
+		try {
+			SecretKey secretKey = encryptWithAES(filePath);
+			String AESkey = secretKeyToString(secretKey);
+			encryptedKey = manager.encrypt(AESkey, key);
+		} catch (Exception e) {
+			System.err.println("Can't encrypt the file");
 		}
-		return finalName + "AESKey.txt";
+		return encryptedKey;
 	}
 	
+	/**
+	 * This function decrypt with RSA 4096 algorithm
+	 * 
+	 * @param String filePath
+	 * @param String encryptedStringKey
+	 * @return the plain key
+	 */
+	private void decryptWithRSA(String filepath, String encryptedStringKey) throws Exception {
+		String plainAESKey = manager.decrypt(encryptedStringKey, manager.getPrivateKey());
+		decryptWithAES(filepath, plainAESKey);
+	}
+	
+	/**
+	 * This function convert one SecretKey to String
+	 * 
+	 * @param SecretKey secretKey
+	 * @return String The string of the SecretKey
+	 */
+	private String secretKeyToString (SecretKey secretKey) {
+		return Base64Utils.encodeToString(secretKey.getEncoded());
+	}
+	
+	/**
+	 * This functions convert one String to SecretKey
+	 * 
+	 * @param String stringKey
+	 * @return SecretKey The secretKey got on the string
+	 */
+	private SecretKey stringToSecretKey (String stringKey) {		
+		return new SecretKeySpec(Base64Utils.decodeFromString(stringKey), "AES");
+	}
 }
