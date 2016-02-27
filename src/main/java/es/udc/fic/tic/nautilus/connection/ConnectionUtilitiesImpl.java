@@ -46,11 +46,13 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				// checking if the file is corrupted
 				if (!(msg.getHash().equals(getHashFromFile(file, "SHA-256")))) {
 					//the split file is corrupted
+					System.err.println("File corrupted\n");
 					return null;
 				}
 				//---
 				return readContentIntoByteArray(file);
 			} catch (Exception e) {
+				System.err.println("File not found\n");
 				return null;
 			}
 		}
@@ -74,18 +76,23 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 							msg.getDateLimit(), byteSize, msg.getHash());
 					
 					if (fileInfo != null) {
+						System.out.println("File has been correctly saved!\n");
 						return 1;
 					} else {
+						System.err.println("Has been happened some error in the save process\n");
 						return -1;
 					}
 					
-				} catch (Exception e){
+				} catch (Exception e) {
+					System.err.println("Has been happened some problem saving the file\n");
 					return -1;
 				}
 			}
-			return -1;
+			System.err.println("The server is full\n");
+			return -2;
 		}
-		return -1;
+		System.err.println("The server isn't avaliable in the file configuration\n");
+		return -3;
 	}
 
 	@Override
@@ -316,7 +323,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	}
 	
 	/**
-	 * Get the extesion from the file name
+	 * Get the extension from the file name
 	 * 
 	 * @param String fileName
 	 * @return String extension
