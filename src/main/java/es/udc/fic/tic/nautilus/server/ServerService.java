@@ -6,6 +6,7 @@ import java.util.Calendar;
 import javax.management.InstanceNotFoundException;
 
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
+import es.udc.fic.tic.nautilus.expcetion.NotHaveDownloadLimitException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 
@@ -42,4 +43,12 @@ public interface ServerService {
 	 * @return boolean for save or not the file
 	 */
 	public boolean checkFileSize(Long fileSize);
+	
+	/**
+	 * This function decrement the download limit of one file
+	 * 
+	 * @param String hash
+	 * @throws throws NotHaveDownloadLimitException
+	 */
+	public void decrementDownloadLimit(String hash) throws NotHaveDownloadLimitException;
 }

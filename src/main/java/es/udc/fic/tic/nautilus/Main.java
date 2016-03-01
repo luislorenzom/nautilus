@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.connection.Client;
 import es.udc.fic.tic.nautilus.connection.Server;
+import es.udc.fic.tic.nautilus.util.MessageSynchronizationBuffer;
 import es.udc.fic.tic.nautilus.util.RSAManager;
 
 
@@ -44,7 +45,7 @@ public class Main {
 			configHandler.initializeConfig();
 		}
 		
-		// if don't exist key pair then generate them
+		// If don't exist key pair then generate them
 		if (!manager.existsPair()) {
 			manager.generateKeys();
 		}
@@ -52,6 +53,11 @@ public class Main {
 		// If don't exist storage folder then create it
 		if (!(new File(configHandler.getConfig().getStorageFolder()).exists())) {
 			new File(configHandler.getConfig().getStorageFolder()).mkdir();
+		}
+		
+		// If the buffer file exist then must be returned into the program
+		if (new File("MessageSynchronizationBuffer").exists()) {
+			MessageSynchronizationBuffer.recoveryBufferFromFile();
 		}
 		
 		try {

@@ -39,4 +39,9 @@ public class FileInfoDaoImpl extends GenericDaoImpl<FileInfo, Long> implements F
 		}
 		return finalLong;
 	}
+	
+	public List<FileInfo> findAllExpiratedFiles() {
+		
+		return null;
+	}
 }

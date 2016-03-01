@@ -11,9 +11,9 @@ public interface ConnectionUtilities {
 	 * This function processed a request which find a file and return this
 	 * 
 	 * @param NautilusMessage msg
-	 * @return The searched file byte array 
+	 * @return NautilusMessage with the byte[] and boolean that indicate if the file needs sync
 	 */
-	public byte[] processMessageTypeZero(NautilusMessage msg);
+	public NautilusMessage processMessageTypeZero(NautilusMessage msg);
 	
 	
 	/**
@@ -48,4 +48,13 @@ public interface ConnectionUtilities {
 	 * @throws Exception 
 	 */
 	public void restoreFile(List<File> files, List<NautilusKey> key) throws Exception;
+	
+	/**
+	 * This function decrement the download limit of one file when this one is
+	 * downloaded in other server
+	 * 
+	 * @param NautilusMessage msg
+	 * @return int one o zero depends of success of operation
+	 */
+	public int synchronizeFile(NautilusMessage msg);
 }

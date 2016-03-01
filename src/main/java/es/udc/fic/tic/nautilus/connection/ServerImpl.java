@@ -76,15 +76,18 @@ public class ServerImpl implements Server {
 					switch (msg.getType()) {
 					
 					case 0:
-						byte[] file = connectionUtilities.processMessageTypeZero(msg);
-						if (file == null) {
+						NautilusMessage response = connectionUtilities.processMessageTypeZero(msg);
+						if (response == null) {
 							return -1;
 						}
-						return file;
+						return response;
 					
 					case 1:
 						return connectionUtilities.processMessageTypeOne(msg);
-
+					
+					case 2:
+						return connectionUtilities.synchronizeFile(msg);
+						
 					default:
 						return -1;
 					}

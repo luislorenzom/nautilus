@@ -37,7 +37,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 	NautilusKeysHandler keysHandler = new NautilusKeysHandler();
 	
 	@Override
-	public byte[] processMessageTypeZero(NautilusMessage msg) {
+	public NautilusMessage processMessageTypeZero(NautilusMessage msg) {
 		if (msg != null) {
 			try {
 				FileInfo fileInfo = serverService.returnFile(msg.getHash());
@@ -49,7 +49,15 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 					return null;
 				}
 				//---
-				return readContentIntoByteArray(file);
+				byte[] content = readContentIntoByteArray(file);
+				boolean synchronize = false;				 
+				if (fileInfo.getDownloadLimit() > -1) {
+					//TODO: añadir una comprobacion, si el downloadLimit 
+					//es igual a 0 borrar el fichero?
+					synchronize = true;
+				}
+				NautilusMessage response = new NautilusMessage(content, synchronize);
+				return response;
 			} catch (Exception e) {
 				return null;
 			}
@@ -232,6 +240,15 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			// The file is corrupt
 			e.printStackTrace();
 			System.err.println("The file is corrupt");
+		}
+	}
+	
+	public int synchronizeFile(NautilusMessage msg) {
+		try {
+			serverService.decrementDownloadLimit(msg.getHash());
+			return 1;
+		} catch (Exception e) {
+			return 0;
 		}
 	}
 	

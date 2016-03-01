@@ -27,6 +27,8 @@ import net.tomp2p.peers.PeerAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import es.udc.fic.tic.nautilus.util.BufferElement;
+import es.udc.fic.tic.nautilus.util.MessageSynchronizationBuffer;
 import es.udc.fic.tic.nautilus.util.RSAManager;
 
 @Service("client")
@@ -41,6 +43,11 @@ public class ClientImpl implements Client {
 	@Override
 	public void saveFileInNetwork(String filePath, int downloadLimit,
 			Calendar dateLimit, Calendar dateRelease, String pKeyPath) throws Exception {
+		
+		// Synchronize the buffer before save the file
+		if (MessageSynchronizationBuffer.anyMessage()) {
+			syncAllBuffer();
+		}
 		
 		// Initialize and generate public key only if exist 
 		PublicKey pkey = null;
@@ -157,18 +164,34 @@ public class ClientImpl implements Client {
 			for (int j = 0; j < 3; j++) {
 				result = startClient(key.getHost(), msg);
 				
-				if (result == 1) {
+				if (result >= 1) {
 					break;
 				}
 			}
 			
-			if (result == 1) {
+			if (result >= 1) {
 				File file = new File(key.getHash()+".aes256");
 				File newFile = new File(key.getFileName());
 				file.renameTo(newFile);
 				
 				file.delete();
 				filesJoin.add(newFile);
+				
+				/* Sync the file (with the backup), only if is necessary */
+				if (result == 2) {
+					int resultSync = syncDownloadLimit(key.getHostBackup(), key.getHash());
+					if (resultSync != 1) {
+						// Fail the message
+						NautilusMessage msgSync = new NautilusMessage(2, key.getHash());
+						MessageSynchronizationBuffer.addMessage(msgSync, key.getHostBackup());
+					}
+				}
+				
+				/* Sync the rest */
+				if (MessageSynchronizationBuffer.anyMessage()) {
+					syncAllBuffer();
+				}
+				
 			} else {
 				// Make the petition to the backup host
 				if (key.getHostBackup() != null) {
@@ -178,18 +201,34 @@ public class ClientImpl implements Client {
 					for (int j = 0; j < 3; j++) {
 						secondResult = startClient(key.getHostBackup(), msg);
 						
-						if (secondResult == 1) {
+						if (secondResult >= 1) {
 							break;
 						}
 					}
 					
-					if (secondResult == 1) {
+					if (secondResult >= 1) {
 						File file = new File(key.getHash()+".aes256");
 						File newFile = new File(key.getFileName());
 						file.renameTo(newFile);
 						
 						file.delete();
 						filesJoin.add(newFile);
+						
+						/* Sync the file (with the original host), only if is necessary */
+						if (secondResult == 2) {
+							int resultSync = syncDownloadLimit(key.getHost(), key.getHash());
+							if (resultSync != 1) {
+								// Fail the message
+								NautilusMessage msgSync = new NautilusMessage(2, key.getHash());
+								MessageSynchronizationBuffer.addMessage(msgSync, key.getHost());
+							}
+						}
+						
+						/* Now sync the rest */
+						if (MessageSynchronizationBuffer.anyMessage()) {
+							syncAllBuffer();
+						}
+						
 					} else {
 						System.out.println("Can't recovery the file");
 						deleteFilesToJoin(filesJoin);
@@ -261,7 +300,34 @@ public class ClientImpl implements Client {
 			
 			byte[] msg = objectToByteArray(msgObject);
 			
-			
+			//---
+			if (msgObject.getType() == 2) {
+				System.out.println("=====> Synchronizing "+msgObject.getHash());
+				// Send and logic to process msg type two
+				FutureDirect future = client.sendDirect(peerA).object(msg).start();
+				
+				future.awaitUninterruptibly();
+				
+				if (future.isSuccess()) {
+					int val = (int) future.object();
+					
+					if (val == 1) {
+						System.out.println("Success in the synchronization!");
+						client.shutdown();
+						return 1;
+					} else {
+						System.out.println("Some problem has been happened in the synchronization");
+						client.shutdown();
+						return -1;
+					}
+					
+				} else {
+					System.out.println("failed in synchronization: " + future.failedReason());
+				}
+				
+			}
+			//---
+				
 			if (msgObject.getType() == 1) {
 				// Send and logic to process msg type one
 				FutureDirect future = client.sendDirect(peerA).object(msg).start();
@@ -298,14 +364,20 @@ public class ClientImpl implements Client {
 				if (future.isSuccess()) {
 					System.out.println("=====> receiving message");
 					try{
-						byte[] byteArray = (byte[]) future.object();
+						NautilusMessage response = (NautilusMessage) future.object();
+						byte[] byteArray = response.getContent();
+						
 						FileOutputStream fos = new FileOutputStream(msgObject.getHash()+".aes256");
 						fos.write(byteArray);
 						fos.close();
 						
 						System.out.println("=====> File part recovered");
 						client.shutdown();
-						return 1;
+						if (response.getSynchronize()) {
+							return 2;
+						} else {
+							return 1;
+						}
 					} catch (Exception e) {
 						System.out.println("=====> has been some error in the server");
 						client.shutdown();
@@ -316,6 +388,7 @@ public class ClientImpl implements Client {
 					System.out.println("failed 3 " + future.failedReason());
 				}
 			}
+			
 			
 			client.shutdown();
 			return -1;
@@ -393,4 +466,72 @@ public class ClientImpl implements Client {
 			file.delete();
 		}
 	}
+	
+	/**
+	 * This function send a message to server for sync the download limit
+	 * 
+	 * @param String ipAddress
+	 * @param String hash
+	 * @return int 
+	 */
+	private int syncDownloadLimit(String ipAddress, String hash) {
+		//Prepare the message
+		NautilusMessage msgObject = new NautilusMessage(2, hash);
+		try {
+			//Sending the message
+			int result = startClient(ipAddress, msgObject);
+			if (result >= 1) {
+				//Correct!
+				System.out.println(hash+" corretly synchronized");
+				return 1;
+			} else {
+				// Some fail
+				return -1;
+			}
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+	
+	/**
+	 * This method delete the oldest message and persist the changes
+	 */
+	private void deleteAndPersist() {
+		MessageSynchronizationBuffer.deleteMessage();
+		MessageSynchronizationBuffer.saveBufferInFile();
+	}
+	
+	/**
+	 * This method renovate a file, it means, delete the file and save 
+	 * it another time. Finally persist the changes in file
+	 */
+	private void renovateAndPersist() {
+		BufferElement element = MessageSynchronizationBuffer.getMessage();
+		MessageSynchronizationBuffer.deleteMessage();
+		MessageSynchronizationBuffer.addMessage(element.getMsg(), element.getIpAddress());
+		MessageSynchronizationBuffer.saveBufferInFile();
+	}
+	
+	private void syncAllBuffer() {
+		/* The reason of this variable is because inside of
+		 * loop the size of buffer is changing */
+		int bufferSize = MessageSynchronizationBuffer.getSize();
+		for (int i = 0; i <= (bufferSize - 1); i++) {
+			BufferElement element = MessageSynchronizationBuffer.getMessage();
+			try {
+				int resultSync = startClient(element.getIpAddress(), element.getMsg());
+				
+				if (resultSync == 1) {
+					//delete from list and persist
+					deleteAndPersist();
+				} else {
+					//delete from list add another time and persist the changes
+					renovateAndPersist();
+				}
+			} catch (Exception e) {
+				System.err.println("Has been happened some error in the synchronized");
+			}
+		}
+	}
+
 }

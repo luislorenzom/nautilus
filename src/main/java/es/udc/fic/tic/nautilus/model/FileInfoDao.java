@@ -45,4 +45,11 @@ public interface FileInfoDao extends GenericDao<FileInfo, Long> {
 	 * @return the sum of total sizes
 	 */
 	public Long getAllSizes();
+	
+	/**
+	 * Find all expired files for delete it
+	 * 
+	 * @return List<FileInfo>
+	 */
+	public List<FileInfo> findAllExpiratedFiles();
 }

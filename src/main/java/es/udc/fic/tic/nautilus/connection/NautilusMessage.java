@@ -12,8 +12,10 @@ public class NautilusMessage implements Serializable{
 	private int downloadLimit;
 	private Calendar dateLimit;
 	private Calendar releaseDate;
+	private boolean synchronize;
 	
-	/* This constructor will be used to create file request */
+	/* This constructor will be used to create file request
+	 * or to make synchronize petitions to other servers */
 	public NautilusMessage(int type, String hash) {
 		super();
 		this.type = type;
@@ -32,7 +34,15 @@ public class NautilusMessage implements Serializable{
 		this.dateLimit = dataLimit;
 		this.releaseDate = releaseDate;
 	}
-
+	
+	
+	/* This constructor will be used to return the files from server to client */
+	public NautilusMessage(byte[] content, boolean synchronize) {
+		super();
+		this.content = content;
+		this.synchronize = synchronize;
+	}
+	
 	
 	public int getType() {
 		return type;
@@ -85,5 +95,14 @@ public class NautilusMessage implements Serializable{
 
 	public void setReleaseDate(Calendar releaseDate) {
 		this.releaseDate = releaseDate;
+	}
+	
+	
+	public boolean getSynchronize() {
+		return synchronize;
+	}
+	
+	public void setSynchronize(boolean synchronize) {
+		this.synchronize = synchronize;
 	}
 }

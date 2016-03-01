@@ -11,7 +11,7 @@ import es.udc.fic.tic.nautilus.connection.NautilusMessage;
 
 public final class MessageSynchronizationBuffer {
 	
-	private static List<NautilusMessage> messageBuffer = new ArrayList<NautilusMessage>();
+	private static List<BufferElement> messageBuffer = new ArrayList<BufferElement>();
 
 	/**
 	 * This method serialize the list that have all the message to
@@ -36,7 +36,7 @@ public final class MessageSynchronizationBuffer {
 		try {
 			FileInputStream fis = new FileInputStream("MessageSynchronizationBuffer");
 			ObjectInputStream ois = new ObjectInputStream(fis);
-			messageBuffer = (List<NautilusMessage>) ois.readObject();
+			messageBuffer = (List<BufferElement>) ois.readObject();
 			ois.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -57,8 +57,8 @@ public final class MessageSynchronizationBuffer {
 	 * 
 	 * @param NautilusMessage
 	 */
-	public static void addMessage(NautilusMessage msg) {
-		messageBuffer.add(msg);
+	public static void addMessage(NautilusMessage msg, String ipAddress) {
+		messageBuffer.add(new BufferElement(msg, ipAddress));
 	}
 	
 	/**
@@ -66,7 +66,7 @@ public final class MessageSynchronizationBuffer {
 	 * 
 	 * @return NautilusMessage
 	 */
-	public static NautilusMessage getMessage() {
+	public static BufferElement getMessage() {
 		return messageBuffer.get(0);
 	}
 	
@@ -75,5 +75,15 @@ public final class MessageSynchronizationBuffer {
 	 */
 	public static void deleteMessage() {
 		messageBuffer.remove(0);
+	}
+	
+	/**
+	 * This function give you the number of messages 
+	 * pending to synchronize
+	 * 
+	 * @return int Number of size
+	 */
+	public static int getSize() {
+		return messageBuffer.size();
 	}
 }

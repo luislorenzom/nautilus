@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.expcetion.FileUnavaliableException;
+import es.udc.fic.tic.nautilus.expcetion.NotHaveDownloadLimitException;
 import es.udc.fic.tic.nautilus.expcetion.NotSaveException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.model.FileInfoDao;
@@ -134,5 +135,21 @@ public class ServerServiceImpl implements ServerService {
 			return false;
 		}
 		return true;
+	}
+	
+	@Transactional
+	public void decrementDownloadLimit(String hash) throws NotHaveDownloadLimitException {
+		try {
+			FileInfo file = fileInfoDao.findByHash(hash);
+			if (file.getDownloadLimit() > -1) {
+				/* Have download limit */
+				int limit = file.getDownloadLimit();
+				file.setDownloadLimit(limit - 1);
+			} else {
+				throw new NotHaveDownloadLimitException();
+			}
+		} catch (Exception e) {
+			throw new NotHaveDownloadLimitException();
+		}
 	}
 }

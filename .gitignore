@@ -26,3 +26,6 @@ hs_err_pid*
 config.xml
 db.properties
 db.script
+private.key
+public.key
+

@@ -24,7 +24,8 @@ public class MessageSynchronizationBufferTest {
 		
 		/* Add one message and check is exist any message */
 		NautilusMessage msg1 = new NautilusMessage(1, "asdasdasdasdas");
-		MessageSynchronizationBuffer.addMessage(msg1);
+		String ipAddress1 = "192.168.1.45";
+		MessageSynchronizationBuffer.addMessage(msg1, ipAddress1);
 		assertTrue(MessageSynchronizationBuffer.anyMessage());
 		
 		/* Save the buffer in a file and recovery */
@@ -41,7 +42,8 @@ public class MessageSynchronizationBufferTest {
 		MessageSynchronizationBuffer.deleteMessage();
 		MessageSynchronizationBuffer.saveBufferInFile();
 		NautilusMessage msg2 = new NautilusMessage(1, "ldsdfsdfsdfs");
-		MessageSynchronizationBuffer.addMessage(msg2);
+		String ipAddress2 = "192.168.1.31";
+		MessageSynchronizationBuffer.addMessage(msg2, ipAddress2);
 		assertTrue(MessageSynchronizationBuffer.anyMessage());
 		MessageSynchronizationBuffer.recoveryBufferFromFile();
 		assertFalse(MessageSynchronizationBuffer.anyMessage());
