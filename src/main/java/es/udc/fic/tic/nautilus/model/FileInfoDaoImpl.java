@@ -1,5 +1,6 @@
 package es.udc.fic.tic.nautilus.model;
 
+import java.util.Calendar;
 import java.util.List;
 
 import javax.management.InstanceNotFoundException;
@@ -40,8 +41,12 @@ public class FileInfoDaoImpl extends GenericDaoImpl<FileInfo, Long> implements F
 		return finalLong;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<FileInfo> findAllExpiratedFiles() {
+		// Get dateNow
+		Calendar dateNow = Calendar.getInstance();
 		
-		return null;
+		return getSession().createQuery("SELECT f FROM FileInfo f WHERE f.dateLimit < :dateNow")
+			.setParameter("dateNow", dateNow).list();
 	}
 }

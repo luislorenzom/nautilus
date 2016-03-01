@@ -51,4 +51,9 @@ public interface ServerService {
 	 * @throws throws NotHaveDownloadLimitException
 	 */
 	public void decrementDownloadLimit(String hash) throws NotHaveDownloadLimitException;
+	
+	/**
+	 * This method delete all expirated file save in our system
+	 */
+	public void deleteAllExpiratedFiles();
 }

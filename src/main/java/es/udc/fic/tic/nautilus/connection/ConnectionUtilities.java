@@ -57,4 +57,9 @@ public interface ConnectionUtilities {
 	 * @return int one o zero depends of success of operation
 	 */
 	public int synchronizeFile(NautilusMessage msg);
+	
+	/**
+	 * Thi method check and delete all expired files save in the system
+	 */
+	public void checkAndDeleteExpiredFile();
 }

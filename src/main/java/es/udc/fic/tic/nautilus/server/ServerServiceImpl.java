@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import javax.management.InstanceNotFoundException;
 
@@ -150,6 +151,20 @@ public class ServerServiceImpl implements ServerService {
 			}
 		} catch (Exception e) {
 			throw new NotHaveDownloadLimitException();
+		}
+	}
+
+	@Transactional
+	public void deleteAllExpiratedFiles() {
+		List<FileInfo> expiratedFiles = fileInfoDao.findAllExpiratedFiles();
+		
+		for (FileInfo file : expiratedFiles) {
+			try {
+				new File(file.getPath()).delete();
+				fileInfoDao.delete(file);
+			} catch (Exception e) {
+				System.err.println("Error trying to delete a entity");
+			}
 		}
 	}
 }

@@ -296,6 +296,48 @@ public class ServerServiceTest {
 		assertFalse(result);
 	}
 	
+	@Test(expected=IndexOutOfBoundsException.class)
+	public void deleteAllexpiratedFilesTest() throws Exception {
+		ConfigHandler configHandler = new ConfigHandler();
+		NautilusConfig newConfig = configHandler.getConfig();
+		
+		newConfig.setServerAvailable(true);
+		newConfig.setLimitSpace(-1L);
+		configHandler.changeConfig(newConfig);
+		
+		String hash1 = "21a57f2fe735e1ae4a9bf15d33fc1af2a533f547f2343d12a499d9c0592044d4";
+		String hash2 = "22a57f2fe735e1ae4a9bf15d33fc1af2a533f547f2343d12a499d9c0592044d4";
+		String hash3 = "23a57f2fe735e1ae4a9bf15d33fc1af2a533f547f2343d12a499d9c0592044d4";
+		String hash4 = "24a57f2fe735e1ae4a9bf15d33fc1af2a533f547f2343d12a499d9c0592044d4";
+		
+		DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
+		
+		Calendar date1 = Calendar.getInstance();
+		date1.setTime(df.parse("12/04/2015 - 00:00:00"));
+		Calendar date2 = Calendar.getInstance();
+		date2.setTime(df.parse("17/11/2017 - 00:00:00"));
+		Calendar date3 = Calendar.getInstance();
+		date3.setTime(df.parse("11/01/2016 - 00:00:00"));
+		Calendar date4 = Calendar.getInstance();
+		date4.setTime(df.parse("12/01/2017 - 00:00:00"));
+		
+		String path = "~/nautilus_storage/";
+		
+		serverService.keepTheFile(path+"file1", 0, null, date1, 1991L, hash1);
+		serverService.keepTheFile(path+"file2", 0, null, date2, 1992L, hash2);
+		serverService.keepTheFile(path+"file3", 0, null, date3, 1993L, hash3);
+		serverService.keepTheFile(path+"file4", 0, null, date4, 1994L, hash4);
+		
+		serverService.deleteAllExpiratedFiles();
+		
+		FileInfo f1 = serverService.returnFile(hash2);
+		assertEquals(f1.getDateLimit(), date2);
+		FileInfo f2 = serverService.returnFile(hash4);
+		assertEquals(f2.getDateLimit(), date4);
+		
+		serverService.returnFile(hash1);
+	}
+	
 	/*********************
 	 * Private functions *
 	 *********************/

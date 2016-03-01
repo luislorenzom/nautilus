@@ -2,6 +2,7 @@ package es.udc.fic.tic.nautilus.connection;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
+import java.util.Date;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +28,23 @@ public class ServerImpl implements Server {
 	private ConnectionUtilities connectionUtilities;
 	
 	public ConfigHandler configHandler = new ConfigHandler();
-	
+
 	public void startServer() throws Exception {
 		Random rnd = new Random(43L);
 		Bindings b = new Bindings().listenAny();
 		Peer master = new PeerBuilder(new Number160(rnd)).ports(4000).bindings(b).start();
 		System.out.println("Server started Listening to: " + DiscoverNetworks.discoverInterfaces(b));
 		System.out.println("address visible to outside is " + master.peerAddress());
+		// Time now in milliseconds
+		long t = new Date().getTime();
 		while (true) {
+			long now = new Date().getTime();
+			if (now - t >= 600000) {
+				// if elapses 10 minutes then check the expired files
+				connectionUtilities.checkAndDeleteExpiredFile();
+				// reset reference time
+				t = new Date().getTime();
+			}			
 			for (PeerAddress pa : master.peerBean().peerMap().all()) {
 				System.out.println("PeerAddress: " + pa);
 				FutureChannelCreator fcc = master.connectionBean().reservation().create(1, 1);

@@ -259,6 +259,10 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 		}
 	}
 	
+	public void checkAndDeleteExpiredFile() {
+		serverService.deleteAllExpiratedFiles();
+	}
+	
 	/*********************/
 	/* private functions */
 	/*********************/
