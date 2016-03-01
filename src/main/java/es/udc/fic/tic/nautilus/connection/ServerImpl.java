@@ -68,7 +68,7 @@ public class ServerImpl implements Server {
 				
 				@Override
 				public Object reply(PeerAddress sender, Object request) throws Exception {
-					System.out.println("===> Incoming request");
+					System.out.println("\n=========> Incoming request");
 					
 					byte[] msg_bytes = (byte[]) request;
 					NautilusMessage msg = byteArrayToObject(msg_bytes);

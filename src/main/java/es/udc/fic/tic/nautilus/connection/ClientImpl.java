@@ -49,7 +49,7 @@ public class ClientImpl implements Client {
 			syncAllBuffer();
 		}
 		
-		// Initialize and generate public key only if exist 
+		// Initialize and generate public key only if doesn't exist 
 		PublicKey pkey = null;
 		if (pKeyPath != null) {
 			try {
@@ -251,7 +251,7 @@ public class ClientImpl implements Client {
 	
 	private int startClient(String ipAddress, NautilusMessage msgObject) throws Exception {
 		try {
-			System.out.println(ipAddress +" "+msgObject.getHash());
+			System.out.println("Sending... "+msgObject.getHash()+"--->"+ipAddress);
 			Random rnd = new Random(42L);
 			Bindings b = new Bindings().listenAny();
 			Peer client = new PeerBuilder(new Number160(rnd)).ports(4001).bindings(b).start();
@@ -347,7 +347,8 @@ public class ClientImpl implements Client {
 						// Fail in the server (can't save for space, permits, doesn't find, etc)
 						System.out.println("=====> has been some error in the server");
 						client.shutdown();
-						return val;
+						System.out.println("=====> Reason: " + printError(val));
+						return -1;
 					}
 					
 				} else {
@@ -468,6 +469,7 @@ public class ClientImpl implements Client {
 	}
 	
 	/**
+<<<<<<< HEAD
 	 * This function send a message to server for sync the download limit
 	 * 
 	 * @param String ipAddress
@@ -532,6 +534,28 @@ public class ClientImpl implements Client {
 				System.err.println("Has been happened some error in the synchronized");
 			}
 		}
+	}
+	/**
+	 * This function get the server error message and print the error reason
+	 * 
+	 * @param int val
+	 * @return String failure reason
+	 */
+	private String printError(int val) {
+		switch (val) {
+		case -1:
+			return "Has been happened some error in the save process\n";
+		
+		case -2:
+			return "The server is full\n";
+		
+		case -3:
+			return "The server isn't avaliable in the file configuration\n";
+
+		default:
+			return "Internal Error\n";
+		}
+		
 	}
 
 }

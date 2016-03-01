@@ -3,7 +3,6 @@ package es.udc.fic.tic.nautilus.connection;
 import static es.udc.fic.tic.nautilus.util.ModelConstanst.SPRING_CONFIG_FILE;
 import static es.udc.fic.tic.nautilus.util.ModelConstanst.SPRING_CONFIG_TEST_FILE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,14 +10,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -119,93 +111,6 @@ public class ConnectionUtilitiesTest {
 		int result = connectionUtilities.processMessageTypeOne(msg);
 		assertEquals(result, -1);
 	}
-	
-	//@Test
-	public void procesingMessageTypeZeroSuccessTest() throws Exception {
-		/* save the file 0 in the system */
-		File file= new File(System.getProperty("user.home") + 
-				"/nautilus_storage/apache-aurora-0.8.0.tar.gz");
-		serverService.keepTheFile(file.getAbsolutePath(), 0, null, null, file.length(), "file0");
-		
-		NautilusMessage msg = new NautilusMessage(0, "file0");
-		byte[] result = connectionUtilities.processMessageTypeZero(msg);
-		
-		assertEquals(result.length, file.length());
-	}
-	
-	//@Test
-	public void procesingMessageTypeZeroNotFoundTest() throws Exception {
-		NautilusMessage msg = new NautilusMessage(0, "file_not_saved");
-		byte[] result = connectionUtilities.processMessageTypeZero(msg);
-		
-		assertNull(result);
-	}
-	
-	//@Test
-	public void procesingMessageTypeZeroNotReleasedTest() throws Exception {
-		/* save the file 0 in the system */
-		
-		DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(df.parse("01/01/2025 - 00:00:00"));
-		
-		File file= new File(System.getProperty("user.home") + 
-				"/nautilus_storage/apache-aurora-0.8.0.tar.gz");
-		serverService.keepTheFile(file.getAbsolutePath(), 0, cal, null, file.length(), "file0");
-		
-		NautilusMessage msg = new NautilusMessage(0, "file0");
-		byte[] result = connectionUtilities.processMessageTypeZero(msg);
-		
-		assertNull(result);
-	}
-	
-	//@Test
-	public void procesingMessageTypeZeroCameLateTest() throws Exception {
-		/* save the file 0 in the system */
-		
-		DateFormat df = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss");
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(df.parse("01/01/2005 - 00:00:00"));
-		
-		File file= new File(System.getProperty("user.home") + 
-				"/nautilus_storage/apache-aurora-0.8.0.tar.gz");
-		serverService.keepTheFile(file.getAbsolutePath(), 0, null, cal, file.length(), "file0");
-		
-		NautilusMessage msg = new NautilusMessage(0, "file0");
-		byte[] result = connectionUtilities.processMessageTypeZero(msg);
-		
-		assertNull(result);
-	}
-	
-	//@Test
-	public void procesingMessageTypeZeroLimitDownloadTest() throws Exception {
-		/* save the file 0 in the system */
-		File file= new File(System.getProperty("user.home") + 
-				"/nautilus_storage/apache-aurora-0.8.0.tar.gz");
-		serverService.keepTheFile(file.getAbsolutePath(), 1, null, null, file.length(), "file0");
-		
-		NautilusMessage msg = new NautilusMessage(0, "file0");
-		byte[] result = connectionUtilities.processMessageTypeZero(msg);
-		
-		assertEquals(result.length, file.length());
-		
-		byte[] result2 = connectionUtilities.processMessageTypeZero(msg);
-		
-		assertNull(result2);
-	}
-	
-	
-	@Test
-	public void packagingMessageTypeOneSuccess() {
-		List<NautilusMessage> packs = connectionUtilities.prepareFileToSend("apache-aurora-0.8.0.tar.gz", 
-				0, null, null);
-		
-		System.out.println("hola mundo");
-		
-	}
-	
-	
-	
 	
 	/*********************
 	 * Private functions *

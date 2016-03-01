@@ -88,9 +88,17 @@ You can also establish one date to delete the file, once itis hosted in the netw
 ```sh
 $ java -jar nautilus-0.1-SNAPSHOT-jar-with-dependencies.jar -ck file.pdf -dal 26/01/2016
 ```
-Finally, if you want to establish a release date for the file, you need to use:
+On the other hand, if you want to establish a release date for the file, you need to use:
 ```sh
 $ java -jar nautilus-0.1-SNAPSHOT-jar-with-dependencies.jar -ck file.pdf -dr 15/03/2016
+```
+Finally, for encrypt all the file keys with your public key, you need to use this flag:
+```sh
+$ java -jar nautilus-0.1-SNAPSHOT-jar-with-dependencies.jar -ck file.pdf -pkey
+```
+If you prefer to use another public key (For example: From another user) you must specify the key:
+```sh
+$ java -jar nautilus-0.1-SNAPSHOT-jar-with-dependencies.jar -ck file.pdf -pkey otherUserPKey.txt
 ```
 All these commands are interchangeable, so you can combine the different flags when saving your files:
 ```sh
@@ -105,9 +113,9 @@ This will recover the file in the same folder where the program is executed
 
 ### TO-DOS
 
- - Hold Punching: Connection between two or more LAN networks
- - RSA encryption support
- - Synchronization between the different servers in the network
+ - **Hold Punching**: Connection between two or more LAN networks
+ - **A noise system**, in other words, a system that generates fake traffic to hide the real messages
+ - **Synchronization between the different servers** in the network
  - Graphic interface
  - Client for Android smartphones
  - Testing in Windows systems
