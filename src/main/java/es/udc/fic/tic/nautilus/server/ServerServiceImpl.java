@@ -167,4 +167,15 @@ public class ServerServiceImpl implements ServerService {
 			}
 		}
 	}
+	
+	@Transactional
+	public void deleteFile(String hash) {
+		try {
+			FileInfo fileInfo = fileInfoDao.findByHash(hash);
+			new File(fileInfo.getPath()).delete();
+			fileInfoDao.delete(fileInfo);
+		} catch (Exception e) {
+			System.err.println("Can't delete the file");
+		}
+	}
 }

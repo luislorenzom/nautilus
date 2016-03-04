@@ -56,4 +56,12 @@ public interface ServerService {
 	 * This method delete all expirated file save in our system
 	 */
 	public void deleteAllExpiratedFiles();
+	
+	/**
+	 * This function is destined to delete files when they exceed the 
+	 * download limit  or when they are corrupted
+	 * 
+	 * @param String hash
+	 */
+	public void deleteFile(String hash);
 }

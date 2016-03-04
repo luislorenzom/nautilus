@@ -43,9 +43,11 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				FileInfo fileInfo = serverService.returnFile(msg.getHash());
 				File file = new File(fileInfo.getPath());
 				//----
-				// checking if the file is corrupted
+				// Checking if the file is corrupted
 				if (!(msg.getHash().equals(getHashFromFile(file, "SHA-256")))) {
-					//the split file is corrupted
+					// Delete the corrupt file
+					serverService.deleteFile(fileInfo.getHash());
+					// The split file is corrupted
 					System.err.println("File corrupted\n");
 					return null;
 				}
@@ -53,8 +55,8 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				byte[] content = readContentIntoByteArray(file);
 				boolean synchronize = false;				 
 				if (fileInfo.getDownloadLimit() > -1) {
-					//TODO: añadir una comprobacion, si el downloadLimit 
-					//es igual a 0 borrar el fichero?
+					// Check if download limit is like 0 then delete the file
+					serverService.deleteFile(fileInfo.getHash());
 					synchronize = true;
 				}
 				NautilusMessage response = new NautilusMessage(content, synchronize);
