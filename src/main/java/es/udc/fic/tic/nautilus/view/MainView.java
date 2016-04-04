@@ -18,6 +18,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
+import javax.swing.SwingUtilities;
+
+import org.apache.log4j.chainsaw.Main;
 
 /**
  *
@@ -722,6 +725,9 @@ public class MainView extends javax.swing.JFrame {
         jButton10.setEnabled(false);
         jButton11.setEnabled(true);
         jButton12.setEnabled(true);
+		String[] args = {"-s"};
+		Main.main(args);
+
     }//GEN-LAST:event_jButton10ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -893,7 +899,7 @@ public class MainView extends javax.swing.JFrame {
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextArea jTextArea2;
+    public static javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
