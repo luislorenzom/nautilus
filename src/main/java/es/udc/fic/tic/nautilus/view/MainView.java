@@ -164,7 +164,9 @@ public class MainView extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JSeparator();
         jTextField5 = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
-
+        
+        this.setVisible(true);
+        
         jDialog1.setTitle("Save new file");
 
         jButton4.setText("Save");

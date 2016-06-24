@@ -173,7 +173,7 @@
         				
         				<transformers>
           					<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-            					<mainClass>es.udc.fic.tic.nautilus.Main</mainClass>
+            					<mainClass>es.udc.fic.tic.nautilus.view.MainView</mainClass>
           					</transformer>
           				
 	          				<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
