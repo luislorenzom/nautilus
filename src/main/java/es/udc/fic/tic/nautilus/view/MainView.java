@@ -2,7 +2,6 @@ package es.udc.fic.tic.nautilus.view;
 
 
 import java.io.File;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -13,17 +12,13 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
-import javax.swing.SwingWorker;
 
 import com.toedter.calendar.JTextFieldDateEditor;
 
 import es.udc.fic.tic.nautilus.Main;
 import es.udc.fic.tic.nautilus.config.ConfigHandler;
 import es.udc.fic.tic.nautilus.config.NautilusConfig;
-import es.udc.fic.tic.nautilus.connection.ClientImpl;
-import es.udc.fic.tic.nautilus.connection.ServerImpl;
 import es.udc.fic.tic.nautilus.util.ModelConstanst.LANGUAGE;
 
 /**
@@ -37,9 +32,7 @@ public class MainView extends javax.swing.JFrame {
 	// 1 -> kill server
 	public static int serverThread = 0;
 	private ConfigHandler configHandler = new ConfigHandler();
-	private ClientImpl clientImpl = new ClientImpl();
-
-    private String home = System.getProperty("user.home");
+	private String home = System.getProperty("user.home");
     
 	/*private SwingWorker worker = new SwingWorker(){
 		 
