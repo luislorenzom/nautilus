@@ -15,6 +15,7 @@ import es.udc.fic.tic.nautilus.connection.Client;
 import es.udc.fic.tic.nautilus.connection.Server;
 import es.udc.fic.tic.nautilus.util.MessageSynchronizationBuffer;
 import es.udc.fic.tic.nautilus.util.RSAManager;
+import es.udc.fic.tic.nautilus.view.MainView;
 
 
 @Component
@@ -96,13 +97,6 @@ public class Main {
 	
 	
 	private void lauchServer() throws Exception{
-		System.out.println("\n");
-		System.out.println("    _   __            __  _ __      ");
-		System.out.println("   / | / /___ ___  __/ /_(_) / _ _______   ________  ______   _____  _____");
-		System.out.println("  /  |/ / __ `/ / / / __/ / / / / / ___/  / ___/ _ \'/ ___/ | / / _ \'/ ___/");
-		System.out.println(" / /|  / /_/ / /_/ / /_/ / / /_/ (__  )  (__  )  __/ /   | |/ /  __/ / ");
-		System.out.println("/_/ |_/\'__,_/\'__,_/\'__/_/_/\'__,_/____/  /____/\'___/_/    |___/\'___/_/ v.0.2");
-
 		server.startServer();
 	}
 	
@@ -168,6 +162,14 @@ public class Main {
 					}
 				}
 			}
+			
+            /* cleaning all the jDialog1 fields */
+            MainView.jSpinner1.setValue(0);
+            MainView.jDateChooser1.setCalendar(null);
+            MainView.jDateChooser2.setCalendar(null);
+            MainView.jComboBox1.setSelectedIndex(0);
+            MainView.jDialog1.setVisible(false);
+            MainView.jTextField4.setText("");
 			
 			client.saveFileInNetwork(args[1], downloadLimit, dateLimit, dateRelease, pkeyPath);	
 		} else {

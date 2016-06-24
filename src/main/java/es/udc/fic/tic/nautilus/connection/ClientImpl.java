@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import es.udc.fic.tic.nautilus.util.BufferElement;
 import es.udc.fic.tic.nautilus.util.MessageSynchronizationBuffer;
 import es.udc.fic.tic.nautilus.util.RSAManager;
+import es.udc.fic.tic.nautilus.view.MainView;
 
 @Service("client")
 public class ClientImpl implements Client {
@@ -55,7 +56,7 @@ public class ClientImpl implements Client {
 			try {
 				pkey = manager.getPublicKeyFromFile(pKeyPath);
 			} catch (Exception e) {
-				System.err.println("Can't recovery the public key, check the argument");
+				MainView.jTextArea1.append("Can't recovery the public key, check the argument\n");
 				System.exit(0);
 			}
 		}
@@ -73,7 +74,7 @@ public class ClientImpl implements Client {
 			List<String> serverPreferences = connectionUtilities.getHostAndBackupFromConfig();
 			for (String host : serverPreferences) {
 				//String host = serverPreferences.get(0);
-				System.out.println("Save the file");
+				MainView.jTextArea1.append("Sending file...\n");
 				
 				// Make three intends
 				int result = 0;
@@ -89,7 +90,7 @@ public class ClientImpl implements Client {
 				
 				if (result == 1) {
 					clean = false;
-					System.out.println("ok!");
+					MainView.jTextArea1.append("File sended!!\n");
 					// Save the host in the key file
 					nautilusKey.get(index).setHost(host);
 					
@@ -105,7 +106,7 @@ public class ClientImpl implements Client {
 						int tmpIndex = 0;
 						for (String hostBackup : serverPreferences) {
 							if (hostBackup != host) {
-								System.out.println("Mirroring the file");
+								MainView.jTextArea1.append("Mirroring file...\n");
 								
 								// Make three intends
 								int resultMirroring = 0;
@@ -119,7 +120,7 @@ public class ClientImpl implements Client {
 								
 								if (resultMirroring == 1) {
 									// Success, now save the hostBackup in the keyFile
-									System.out.println("ok!");
+									MainView.jTextArea1.append("Mirroring was successfully!!\n");
 									nautilusKey.get(index).setHostBackup(hostBackup);
 									break;
 								}
@@ -134,20 +135,24 @@ public class ClientImpl implements Client {
 						}
 					}
 					break;
-				} 
+				}
+		    	MainView.jProgressBar1.setValue(100);
+		    	MainView.jProgressBar1.setString("100%");			
 			}
 			
 			if (clean) {
 				// if can't sent an file split then delete the 
 				// key and the encrypt files
-				System.out.println("Can't sent one file split. Cleaning the tmp files");
+				MainView.jTextArea1.append("Can't sent one file split\nCleaning the tmp files\n");
 				cleanAllTmpFile(filePath);
-				System.exit(0);
+				//System.exit(0);
 			}
 			
 			index++;
 		}
 		keysHandler.generateKeys(nautilusKey);
+    	MainView.jProgressBar1.setValue(100);
+    	MainView.jProgressBar1.setString("100%");
 	}
 
 	@Override
@@ -230,17 +235,19 @@ public class ClientImpl implements Client {
 						}
 						
 					} else {
-						System.out.println("Can't recovery the file");
+						MainView.jTextArea1.append("Can't recovery the file\n");
 						deleteFilesToJoin(filesJoin);
-						System.exit(0);
+						//System.exit(0);
 					}
 				} else {
-					System.out.println("Can't recovery the file");
+					MainView.jTextArea1.append("Can't recovery the file\n");
 					deleteFilesToJoin(filesJoin);
-					System.exit(0);
+					//System.exit(0);
 				}
 			}
 		}
+    	MainView.jProgressBar1.setValue(50);
+    	MainView.jProgressBar1.setString("50%");
 		// Decrypt and join the file's part
 		connectionUtilities.restoreFile(filesJoin, keys);
 	}
@@ -251,7 +258,7 @@ public class ClientImpl implements Client {
 	
 	private int startClient(String ipAddress, NautilusMessage msgObject) throws Exception {
 		try {
-			System.out.println("Sending... "+msgObject.getHash()+"--->"+ipAddress);
+			MainView.jTextArea1.append("Sending... "+msgObject.getHash()+" to "+ipAddress+"\n");
 			Random rnd = new Random(42L);
 			Bindings b = new Bindings().listenAny();
 			Peer client = new PeerBuilder(new Number160(rnd)).ports(4001).bindings(b).start();
@@ -273,7 +280,7 @@ public class ClientImpl implements Client {
 			futureBootstrap.awaitUninterruptibly();
 	
 			Collection<PeerAddress> addressList = client.peerBean().peerMap().all();
-			System.out.println("=====> "+addressList.size());
+			//System.out.println("=====> "+addressList.size());
 			
 			// if can not connect with the server
 			if (addressList.size() == 0) {
@@ -290,10 +297,10 @@ public class ClientImpl implements Client {
 			
 			
 			if (futureDiscover.isSuccess()) {
-				System.out.println("found that my outside address is " + futureDiscover.peerAddress());
+				MainView.jTextArea1.append("found that my outside address is " + futureDiscover.peerAddress()+"\n");
 			} else {
 				// Send the file without problem!
-				System.out.println("failed 1 " + futureDiscover.failedReason());
+				MainView.jTextArea1.append("failed 1 " + futureDiscover.failedReason() + "\n");
 			}
 			
 			PeerAddress peerA = addressList.iterator().next();
@@ -302,7 +309,7 @@ public class ClientImpl implements Client {
 			
 			//---
 			if (msgObject.getType() == 2) {
-				System.out.println("=====> Synchronizing "+msgObject.getHash());
+				MainView.jTextArea1.append("Synchronizing... " + msgObject.getHash()+"\n");
 				// Send and logic to process msg type two
 				FutureDirect future = client.sendDirect(peerA).object(msg).start();
 				
@@ -312,17 +319,17 @@ public class ClientImpl implements Client {
 					int val = (int) future.object();
 					
 					if (val == 1) {
-						System.out.println("Success in the synchronization!");
+						MainView.jTextArea1.append("Success in the synchronization!\n");
 						client.shutdown();
 						return 1;
 					} else {
-						System.out.println("Some problem has been happened in the synchronization");
+						MainView.jTextArea1.append("Some problem has been happened in the synchronization\n");
 						client.shutdown();
 						return -1;
 					}
 					
 				} else {
-					System.out.println("failed in synchronization: " + future.failedReason());
+					MainView.jTextArea1.append("failed in synchronization: " + future.failedReason()+"\n");
 				}
 				
 			}
@@ -336,23 +343,23 @@ public class ClientImpl implements Client {
 				
 				if (future.isSuccess()) {
 					
-					System.out.println("=====> receiving message");
+					MainView.jTextArea1.append("Receiving message...\n");
 					int val = (int) future.object();
 					if (val == 1) {
 						// Success!!
-						System.out.println("=====> File part correctly sent");
+						MainView.jTextArea1.append("File part correctly sent!!\n");
 						client.shutdown();
 						return val;
 					} else {
 						// Fail in the server (can't save for space, permits, doesn't find, etc)
-						System.out.println("=====> has been some error in the server");
+						MainView.jTextArea1.append("Has been some error in the server\n");
 						client.shutdown();
-						System.out.println("=====> Reason: " + printError(val));
+						MainView.jTextArea1.append("Reason: " + printError(val)+"\n");
 						return -1;
 					}
 					
 				} else {
-					System.out.println("failed 2 " + future.failedReason());
+					MainView.jTextArea1.append("failed 2 " + future.failedReason()+"\n");
 				}
 			}
 			
@@ -363,7 +370,7 @@ public class ClientImpl implements Client {
 				future.awaitUninterruptibly();
 				
 				if (future.isSuccess()) {
-					System.out.println("=====> receiving message");
+					MainView.jTextArea1.append("Receiving message...");
 					try{
 						NautilusMessage response = (NautilusMessage) future.object();
 						byte[] byteArray = response.getContent();
@@ -372,7 +379,7 @@ public class ClientImpl implements Client {
 						fos.write(byteArray);
 						fos.close();
 						
-						System.out.println("=====> File part recovered");
+						MainView.jTextArea1.append("File part recovered!!\n");
 						client.shutdown();
 						if (response.getSynchronize()) {
 							return 2;
@@ -380,13 +387,14 @@ public class ClientImpl implements Client {
 							return 1;
 						}
 					} catch (Exception e) {
-						System.out.println("=====> has been some error in the server");
+						e.printStackTrace();
+						MainView.jTextArea1.append("Has been some error in the server\n");
 						client.shutdown();
 						return -1;
 					}
 					
 				} else {
-					System.out.println("failed 3 " + future.failedReason());
+					MainView.jTextArea1.append("failed 3 " + future.failedReason()+"\n");
 				}
 			}
 			
@@ -394,7 +402,7 @@ public class ClientImpl implements Client {
 			client.shutdown();
 			return -1;
 		} catch (Exception e) {
-			System.out.println("Can't find the host");
+			MainView.jTextArea1.append("Can't find the host\n");
 			return -1;
 		}
 	}
@@ -484,7 +492,7 @@ public class ClientImpl implements Client {
 			int result = startClient(ipAddress, msgObject);
 			if (result >= 1) {
 				//Correct!
-				System.out.println(hash+" corretly synchronized");
+				MainView.jTextArea1.append(hash+" corretly synchronized!!\n");
 				return 1;
 			} else {
 				// Some fail
@@ -531,7 +539,7 @@ public class ClientImpl implements Client {
 					renovateAndPersist();
 				}
 			} catch (Exception e) {
-				System.err.println("Has been happened some error in the synchronized");
+				MainView.jTextArea1.append("Has been happened some error in the synchronized");
 			}
 		}
 	}

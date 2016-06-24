@@ -23,6 +23,7 @@ import es.udc.fic.tic.nautilus.expcetion.HashGenerationException;
 import es.udc.fic.tic.nautilus.model.FileInfo;
 import es.udc.fic.tic.nautilus.server.ServerService;
 import es.udc.fic.tic.nautilus.util.ModelConstanst.ENCRYPT_ALG;
+import es.udc.fic.tic.nautilus.view.MainView;
 
 @Service("connectionUtilities")
 public class ConnectionUtilitiesImpl implements ConnectionUtilities {
@@ -48,7 +49,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 					// Delete the corrupt file
 					serverService.deleteFile(fileInfo.getHash());
 					// The split file is corrupted
-					System.err.println("File corrupted\n");
+					MainView.jTextArea2.append("Corrupted file" + "\n");
 					return null;
 				}
 				//---
@@ -62,7 +63,7 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				NautilusMessage response = new NautilusMessage(content, synchronize);
 				return response;
 			} catch (Exception e) {
-				System.err.println("File not found\n");
+				MainView.jTextArea2.append("File not found" + "\n");
 				return null;
 			}
 		}
@@ -86,22 +87,22 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 							msg.getDateLimit(), byteSize, msg.getHash());
 					
 					if (fileInfo != null) {
-						System.out.println("File has been correctly saved!\n");
+						MainView.jTextArea2.append("File has been correctly saved!\n");
 						return 1;
 					} else {
-						System.err.println("Has been happened some error in the save process\n");
+						MainView.jTextArea2.append("Has been happened some error in the save process\n");
 						return -1;
 					}
 					
 				} catch (Exception e) {
-					System.err.println("Has been happened some problem saving the file\n");
+					MainView.jTextArea2.append("Has been happened some problem saving the file\n");
 					return -1;
 				}
 			}
-			System.err.println("The server is full\n");
+			MainView.jTextArea2.append("The server is full\n");
 			return -2;
 		}
-		System.err.println("The server isn't avaliable in the file configuration\n");
+		MainView.jTextArea2.append("The server isn't avaliable in the file configuration\n");
 		return -3;
 	}
 
@@ -113,6 +114,8 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			String pathForList = ".";
 			/* Split the file */
 			 clientService.fileSplit(filePath);
+			 MainView.jProgressBar1.setValue(25);
+			 MainView.jProgressBar1.setString("25%");
 			 List<File> splitFiles = new ArrayList<File>();
 
 			 if (new File(filePath).getParent() != null) {
@@ -168,6 +171,9 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				 // Add the new message to the messageList
 				 msgs.add(msg);
 			 }
+			 MainView.jProgressBar1.setValue(50);
+			 MainView.jProgressBar1.setStringPainted(true);
+			 MainView.jProgressBar1.setString("50%");
 			 
 			 // Write the key into xml
 			 keysHandler.generateKeys(keysList);
@@ -211,6 +217,9 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 				deleteFiles.add(new File("dec_"+file.getName().substring(0, lenghtDeleteFiles)));
 			}
 			
+        	MainView.jProgressBar1.setValue(75);
+        	MainView.jProgressBar1.setString("75%");
+			
 			// Get the baseName for make the join operation
 			String[] baseNameArray = keys.get(0).getFileName().split("\\.");
 			String baseName = "";
@@ -235,20 +244,24 @@ public class ConnectionUtilitiesImpl implements ConnectionUtilities {
 			for (File fileToDelete : deleteFiles) {
 				fileToDelete.delete();
 			}
+			
+        	MainView.jProgressBar1.setValue(100);
+        	MainView.jProgressBar1.setString("100%");
+			
 		} catch (javax.crypto.BadPaddingException e1) {
 			// The private key is wrong
-			System.err.println("The private Key is wrong");
+			MainView.jTextArea1.append("Private Key is wrong\n");
 			
 			for (File file : files) {
 				file.delete();
 			}
 			
-			System.exit(0);
+			//System.exit(0);
 			
 		} catch (Exception e) {
 			// The file is corrupt
 			e.printStackTrace();
-			System.err.println("The file is corrupt");
+			MainView.jTextArea1.append("File is corrupt\n");
 		}
 	}
 	

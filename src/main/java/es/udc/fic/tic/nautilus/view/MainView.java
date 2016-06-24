@@ -1,13 +1,9 @@
 package es.udc.fic.tic.nautilus.view;
 
 
-import com.toedter.calendar.JTextFieldDateEditor;
-
-import es.udc.fic.tic.nautilus.config.ConfigHandler;
-import es.udc.fic.tic.nautilus.config.NautilusConfig;
-import es.udc.fic.tic.nautilus.util.ModelConstanst.LANGUAGE;
-
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -17,10 +13,18 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
-import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
-import org.apache.log4j.chainsaw.Main;
+import com.toedter.calendar.JTextFieldDateEditor;
+
+import es.udc.fic.tic.nautilus.Main;
+import es.udc.fic.tic.nautilus.config.ConfigHandler;
+import es.udc.fic.tic.nautilus.config.NautilusConfig;
+import es.udc.fic.tic.nautilus.connection.ClientImpl;
+import es.udc.fic.tic.nautilus.connection.ServerImpl;
+import es.udc.fic.tic.nautilus.util.ModelConstanst.LANGUAGE;
 
 /**
  *
@@ -29,9 +33,26 @@ import org.apache.log4j.chainsaw.Main;
 @SuppressWarnings("serial")
 public class MainView extends javax.swing.JFrame {
 	
+	// 0 -> run server
+	// 1 -> kill server
+	public static int serverThread = 0;
 	private ConfigHandler configHandler = new ConfigHandler();
+	private ClientImpl clientImpl = new ClientImpl();
 
     private String home = System.getProperty("user.home");
+    
+	/*private SwingWorker worker = new SwingWorker(){
+		 
+		@Override
+		protected Object doInBackground() throws Exception {
+			//serverImpl.startServer();
+			String[] args = {"-s"};
+			Main.main(args);
+			this.cancel(true);
+			return null;
+		}
+	};*/
+	
     /**
      * Creates new form MainView
      */
@@ -118,6 +139,7 @@ public class MainView extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        jProgressBar1 =  new javax.swing.JProgressBar();
         jPanel2 = new javax.swing.JPanel();
         jButton10 = new javax.swing.JButton();
         jButton11 = new javax.swing.JButton();
@@ -344,7 +366,9 @@ public class MainView extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                	.addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                	.addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -361,7 +385,9 @@ public class MainView extends javax.swing.JFrame {
                         .addComponent(jButton1)
                         .addGap(18, 18, 18)
                         .addComponent(jButton2)))
-                .addContainerGap(61, Short.MAX_VALUE))
+                    .addGap(18, 18, 18)
+                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Client", jPanel1);
@@ -711,24 +737,81 @@ public class MainView extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         /* get all data and generate a petition */
-        
-        /* cleaning all the jDialog1 fileds */
-        jSpinner1.setValue(0);
-        jDateChooser1.setCalendar(null);
-        jDateChooser2.setCalendar(null);
-        jComboBox1.setSelectedIndex(0);
-        jDialog1.setVisible(false);
+    	jTextArea1.append("Saving file...\n");
+    	
+    	String pkey = null;
+    	SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    	String dateLimit = null;
+    	String dateRelease = null;
+    	
+    	if (jDateChooser1.getCalendar() != null) {
+    		dateRelease = sdf.format(jDateChooser1.getCalendar().getTime());
+    	}
+    	
+    	if (jDateChooser2.getCalendar() != null) {
+    		dateLimit = sdf.format(jDateChooser2.getCalendar().getTime());
+    	}
+    	
+    	if (jComboBox1.getSelectedIndex() == 0) {
+    		pkey = null;
+    	}
+    	
+    	if (jComboBox1.getSelectedIndex() == 1) {
+    		pkey = "public.key";
+    	}
+
+    	if (jComboBox1.getSelectedIndex() == 2) {
+    		pkey = jTextField4.getText();
+    	}
+    	
+    	jProgressBar1.setValue(0);
+    	jProgressBar1.setStringPainted(true);
+    	jProgressBar1.setString("0%");
+    	
+    	final String[] args = {"-ck", jTextField2.getText(), String.valueOf(jSpinner1.getValue()), dateLimit, dateRelease,
+    			pkey};
+    	jDialog1.setVisible(false);
+    	Runnable r = new Runnable() {
+			
+			@Override
+			public void run() {
+		    	try {
+		            /* run the client */
+		    		Main.main(args);
+		    	} catch (Exception ex) {
+		    		ex.printStackTrace();
+		    	}
+				
+			}
+		};
+		
+		new Thread(r).start();
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-        jTextArea2.append("Starting nautilus server...\n");
         jButton10.setEnabled(false);
         jButton11.setEnabled(true);
         jButton12.setEnabled(true);
-		String[] args = {"-s"};
-		Main.main(args);
+		//worker.execute();
+        Runnable r = new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					//serverImpl.startServer();
+					String[] args = {"-s"};
+					Main.main(args);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		new Thread(r).start();
+	}
 
-    }//GEN-LAST:event_jButton10ActionPerformed
+    //GEN-LAST:event_jButton10ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         jFileChooser1.setCurrentDirectory(new File(home));
@@ -736,9 +819,28 @@ public class MainView extends javax.swing.JFrame {
         jFileChooser1.setSelectedFile(new File(""));
         
         if (jFileChooser1.showOpenDialog(jPanel1) == JFileChooser.APPROVE_OPTION) {
-            String path = jFileChooser1.getSelectedFile().getAbsolutePath();
+        	cleanProgressBar();
+        	final String path = jFileChooser1.getSelectedFile().getAbsolutePath();
+        	
+        	
             /* TODO: comprobar que el fichero sea una clave */
-            jTextArea1.append("Obtain key from... " + path);
+            jTextArea1.append("Obtain key from --> " + path);
+            final String[] argsv = {"-cr", path};
+            
+            Runnable r = new Runnable() {
+				
+				@Override
+				public void run() {
+		            try {
+		            	Main.main(argsv);
+		            } catch (Exception ex) {
+		            	ex.printStackTrace();
+		            }
+				}
+			};
+            
+			new Thread(r).start();
+			
         } else {
             System.err.printf("Cancel operation");
             jFileChooser1.setCurrentDirectory(new File(home));
@@ -774,13 +876,17 @@ public class MainView extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    // STOP SERVER BUTTON
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        jTextArea2.append("Stopping nautilus server...\n");
+    	jTextArea2.append("Stopping nautilus server...\n");
         jButton10.setEnabled(true);
         jButton11.setEnabled(false);
         jButton12.setEnabled(false);
+        // TODO kill the server
+        serverThread = 1;
     }//GEN-LAST:event_jButton11ActionPerformed
-
+    
+    // RESTART SERVER BUTTON
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
         jTextArea2.append("Restarting nautilus server...\n");  
         jButton11ActionPerformed(evt);
@@ -855,9 +961,9 @@ public class MainView extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
-    private javax.swing.JButton jButton11;
-    private javax.swing.JButton jButton12;
+    public static javax.swing.JButton jButton10;
+    public static javax.swing.JButton jButton11;
+    public static javax.swing.JButton jButton12;
     private javax.swing.JButton jButton13;
     private javax.swing.JButton jButton14;
     private javax.swing.JButton jButton2;
@@ -869,10 +975,10 @@ public class MainView extends javax.swing.JFrame {
     private javax.swing.JButton jButton8;
     private javax.swing.JButton jButton9;
     private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private com.toedter.calendar.JDateChooser jDateChooser1;
-    private com.toedter.calendar.JDateChooser jDateChooser2;
-    private javax.swing.JDialog jDialog1;
+    public static javax.swing.JComboBox<String> jComboBox1;
+    public static com.toedter.calendar.JDateChooser jDateChooser1;
+    public static com.toedter.calendar.JDateChooser jDateChooser2;
+    public static javax.swing.JDialog jDialog1;
     private javax.swing.JDialog jDialog2;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
@@ -889,6 +995,7 @@ public class MainView extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    public static javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -896,14 +1003,14 @@ public class MainView extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSlider jSlider1;
-    private javax.swing.JSpinner jSpinner1;
+    public static javax.swing.JSpinner jSpinner1;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTextArea jTextArea1;
+    public static javax.swing.JTextArea jTextArea1;
     public static javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
+    public static javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
     // End of variables declaration//GEN-END:variables
 
@@ -998,4 +1105,11 @@ public class MainView extends javax.swing.JFrame {
     	
     	return servers;
     }
+    
+    private void cleanProgressBar() {
+    	jProgressBar1.setStringPainted(true);
+    	jProgressBar1.setString("");
+    	jProgressBar1.setValue(0);
+    }
+    
 }
