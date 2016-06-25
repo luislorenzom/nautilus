@@ -2,6 +2,9 @@ package es.udc.fic.tic.nautilus.connection;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
@@ -97,6 +100,38 @@ public class ServerImpl implements Server {
 					
 					case 2:
 						return connectionUtilities.synchronizeFile(msg);
+						
+					case 3:
+						/* get the string calendars and generate old style message */
+						DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+						Calendar releaseDate = null;
+						Calendar dateLimit = null;
+						
+						if (msg.getDateLimitString() != null) {
+							dateLimit = Calendar.getInstance();
+							/* Si no se pone este try-catch no hace 
+							 * bien la conversion a calendar; REVISARLO */
+							try{
+								dateLimit.setTime(df.parse(msg.getReleaseDateString()));
+							} catch (Exception e) {
+								// Probar a no imprimir la traza y listo?
+								e.printStackTrace();
+							}
+						}
+						
+						if (msg.getReleaseDateString() != null) {
+							releaseDate = Calendar.getInstance();
+							try {
+							releaseDate.setTime(df.parse(msg.getDateLimitString()));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						
+						NautilusMessage msg_old = new NautilusMessage(1, msg.getHash(), msg.getContent(), 
+								msg.getDownloadLimit(), releaseDate, dateLimit);
+						
+						return connectionUtilities.processMessageTypeOne(msg_old);
 						
 					default:
 						return -1;

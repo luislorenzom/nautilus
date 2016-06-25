@@ -28,4 +28,4 @@ db.properties
 db.script
 private.key
 public.key
-
+MessageSynchronizationBuffer
