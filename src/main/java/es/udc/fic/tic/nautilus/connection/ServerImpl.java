@@ -143,17 +143,27 @@ public class ServerImpl implements Server {
 							Calendar dateLimit = null;
 							
 							if (msg.getDateLimitString() != null) {
-								releaseDate = Calendar.getInstance();
-								releaseDate.setTime(df.parse(msg.getReleaseDateString()));
+								dateLimit = Calendar.getInstance();
+								/* Si no se pone este try-catch no hace 
+								 * bien la conversion a calendar; REVISARLO */
+								try{
+									dateLimit.setTime(df.parse(msg.getReleaseDateString()));
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 							}
 							
 							if (msg.getReleaseDateString() != null) {
-								dateLimit = Calendar.getInstance();
-								dateLimit.setTime(df.parse(msg.getDateLimitString()));
+								releaseDate = Calendar.getInstance();
+								try {
+								releaseDate.setTime(df.parse(msg.getDateLimitString()));
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 							}
 							
 							NautilusMessage msg_old = new NautilusMessage(1, msg.getHash(), msg.getContent(), 
-									msg.getDownloadLimit(), dateLimit, releaseDate);
+									msg.getDownloadLimit(), releaseDate, dateLimit);
 							
 							return connectionUtilities.processMessageTypeOne(msg_old);
 							
