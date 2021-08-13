@@ -70,7 +70,7 @@
     <dependency>
 		<groupId>org.bouncycastle</groupId>
 		<artifactId>bcprov-jdk15on</artifactId>
-		<version>1.52</version>
+		<version>1.67</version>
 	</dependency>
 	
 	<!-- CGLIB (required by Spring) -->
